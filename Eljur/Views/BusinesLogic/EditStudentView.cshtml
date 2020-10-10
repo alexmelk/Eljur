@@ -1,0 +1,28 @@
+﻿@inject Eljur.Context.dbContext _db
+@model Eljur.Context.Tables.Student
+@{
+    ViewData["Title"] = "Студенты";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Редактировать студентов</h2>
+<br />
+<br />
+<form asp-action="EditStudent" method="post">
+<div class="row">
+   <input asp-for="@Model.Id" type="hidden"/>
+
+    <div class="form-group col-sm-6">
+        <label asp-for="@Model.FIO">Ф.И.О.</label>
+        <input type="text" asp-for="@Model.FIO" class="form-control" placeholder="" />
+    </div>
+    <div class="form-group col-sm-6">
+        <label asp-for="@Model.Group">Группа</label>
+        <select class="form-control" asp-for="@Model.Group.Id" asp-items="@(new SelectList(_db.Group,"Id","Name"))"></select>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <button type="submit" class="btn btn-success" style="width:100%;">Обновить</button>
+    </div>
+</div>
+</form>

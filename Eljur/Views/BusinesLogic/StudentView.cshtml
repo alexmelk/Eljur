@@ -1,0 +1,57 @@
+﻿@inject Eljur.Context.dbContext _db
+@model List<Eljur.Context.Tables.Student>
+@{
+    ViewData["Title"] = "Студенты";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Редактировать студентов</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список студентов</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid">
+    <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>Группа</th>
+            <th>Посещений (часы)</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+            <tr>
+                <td>@el.FIO</td>
+                <td>@el.Group.Name</td>
+                <td>@(el.Visits.Count()*2)</td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveStudent" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="EditStudentView" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Добавить студента</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="BusinesLogic" asp-action="EditStudent">
+        <div class="form-group">
+            <label>Ф.И.О. студента</label>
+            <input name="fio" class="form-control" placeholder="Иванов И.И." />
+        </div>
+        <div class="form-group">
+            <label>Группа</label>
+            <select class="form-control" name="groupid" asp-items="@(new SelectList(_db.Group,"Id","Name"))"></select>
+        </div>
+        <div>
+            <button class="btn btn-success" style="width:100%;">Добавить</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,73 @@
+﻿@model List<Eljur.Context.Tables.Group>
+@{
+    ViewData["Title"] = "Группы";
+}
+<br />
+<h2 class="text-muted text-center">Редактировать группы</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список групп</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Студентов в группе (чел.)</th>
+            <th>Предметов в группе (шт.)</th>
+            <th>Посещаемость (часов)</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+            <tr>
+                <td>@el.Name</td>
+                <td>@el.Students.Count()</td>
+                <td>@el.Subjects.Count()</td>
+                <td>@(el.Visits.Count()*2)</td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveGroup" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Добавить группу</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="BusinesLogic" asp-action="EditGroup">
+        <div class="form-group">
+            <label>Название группы</label>
+            <input name="name" class="form-control" placeholder="ИВТ-20" />
+        </div>
+        <div>
+            <button class="btn btn-success" style="width:100%;">Добавить</button>
+        </div>
+    </form>
+</div>
+<br />
+<hr />
+<h6 class="text-center">Изменить группу</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="BusinesLogic" asp-action="EditGroup">
+        <div class="form-group">
+            <label>Именить</label>
+            <select class="form-control" name="id" asp-items="@(new SelectList(Model,"Id","Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>На</label>
+            <input name="name" class="form-control" placeholder="ИВТ-20" />
+        </div>
+        <div>
+            <button class="btn btn-success" style="width:100%;">Изменить</button>
+        </div>
+    </form>
+</div>
