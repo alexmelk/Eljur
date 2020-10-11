@@ -43,24 +43,20 @@
             <div class="collapse navbar-collapse" id="navbarText">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link" asp-action="Index">Добавить посещение<span class="sr-only">(current)</span></a>
+                        <a class="nav-link" asp-action="Index" asp-controller="Settings">Добавить посещение<span class="sr-only">(current)</span></a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-action="StudentView">Студенты<span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-action="GroupView">Группы<span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-action="SubjectView">Предметы<span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-action="ThemeView">Темы<span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-action="VisitView">Посещения<span class="sr-only">(current)</span></a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Настройки</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" asp-action="StudentView" asp-controller="Settings">Студенты<span class="sr-only">(current)</span></a>
+                            <a class="dropdown-item" asp-action="GroupView" asp-controller="Settings">Группы<span class="sr-only">(current)</span></a>
+                            <a class="dropdown-item" asp-action="SubjectView" asp-controller="Settings">Предметы<span class="sr-only">(current)</span></a>
+                            <a class="dropdown-item" asp-action="ThemeView" asp-controller="Settings">Темы<span class="sr-only">(current)</span></a>
+                            <a class="dropdown-item" asp-action="VisitView" asp-controller="Settings">Посещения<span class="sr-only">(current)</span></a>
+                        </div>
                     </li>
                 </ul>
+              
                 <span class="navbar-text">
                     <label style="color:white; font-weight:normal;">@User.Identity.Name</label>
                     <a asp-controller="Account" asp-action="Logout" style="color:white; font-weight:bold;" class="btn btn-danger">Выйти</a>

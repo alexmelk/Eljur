@@ -1,0 +1,28 @@
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model ChoosePropertyVisit
+@{
+    ViewData["Title"] = "Выбор времени";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Выберите предмет</h2>
+<br />
+<br />
+<hr />
+<form asp-controller="Visit" asp-action="ChooseTime">
+    <input asp-for="@Model.Group.Id" type="hidden" />
+    <input asp-for="@Model.Subject.Id" type="hidden" />
+    <div style="margin:0 auto; width:300px;">
+        <div class="row">
+                <div class="form-group">
+                    <label lass="text-info">Часы на занятие:</label><br>
+                    <input asp-for="@Model.Time" type="number" min="2" step="2" value="2" class="form-control" />
+                </div>
+        </div>
+        <br />
+        <div class="row">
+            <button class="btn btn-success">Далее</button>
+        </div>
+    </div>
+</form>
+<hr />

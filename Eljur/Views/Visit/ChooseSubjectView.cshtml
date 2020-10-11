@@ -1,0 +1,24 @@
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model ChoosePropertyVisit
+@{
+    ViewData["Title"] = "Выбор предмета";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Выберите предмет</h2>
+<br />
+<br />
+<hr />
+<form asp-controller="Visit" asp-action="ChooseSubject">
+    <input asp-for="@Model.Group.Id" type="hidden"/>
+    <div style="margin:0 auto; width:300px;">
+        <div class="row">
+            <select class="form-control" asp-for="@Model.Subject.Id" asp-items="@(new SelectList(_db.Group.Include(x=>x.Subjects).Where(x=>x.Id==Model.Group.Id).FirstOrDefault().Subjects, "Id", "Name"))"></select>
+        </div>
+        <br />
+        <div class="row">
+            <button class="btn btn-success">Далее</button>
+        </div>
+    </div>
+</form>
+<hr />

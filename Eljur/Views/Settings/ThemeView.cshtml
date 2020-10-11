@@ -1,0 +1,55 @@
+﻿@inject Eljur.Context.dbContext _db
+@model List<Eljur.Context.Tables.Theme>
+@{
+    ViewData["Title"] = "Темы";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Редактировать темы занятий</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список тем</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Предмет</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+            <tr>
+                <td>@el.Name</td>
+                <td>@el.Subject.Name</td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveTheme" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="EditThemeView" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Добавить тему</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="BusinesLogic" asp-action="EditTheme" method="get" >
+        <div class="form-group">
+            <label>Название темы</label>
+            <input name="name" class="form-control" placeholder="Переменные" />
+        </div>
+        <div class="form-group">
+            <label>Предмет</label>
+            <select class="form-control" name="subjectId" asp-items="@(new SelectList(_db.Subject,"Id","Name"))"></select>
+        </div>
+        <div>
+            <button class="btn btn-success" style="width:100%;">Добавить</button>
+        </div>
+    </form>
+</div>

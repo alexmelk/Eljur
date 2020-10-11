@@ -1,0 +1,22 @@
+﻿@inject Eljur.Context.dbContext _db
+@model ChoosePropertyVisit
+@{
+    ViewData["Title"] = "Выбор группы";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Выберите группу</h2>
+<br />
+<br />
+<hr />
+<form asp-controller="Visit" asp-action="ChooseGroup">
+    <div style="margin:0 auto; width:300px;">
+        <div class="row">
+            <select class="form-control" asp-for="@Model.Group.Id" asp-items="@(new SelectList(_db.Group, "Id", "Name"))"></select>
+        </div>
+        <br />
+        <div class="row">
+            <button class="btn btn-success">Далее</button>
+        </div>
+    </div>
+</form>
+<hr />

@@ -1,0 +1,49 @@
+﻿@inject Eljur.Context.dbContext _db
+@model Eljur.Context.Tables.Group
+@{
+    ViewData["Title"] = "Группы";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Редактировать группу</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список предметов</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid">
+    <thead>
+        <tr>
+            <th>Предмет</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model.Subjects)
+        {
+            <tr>
+                <td>@el.Name</td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveGroupSubject" asp-route-groupId="@Model.Id" asp-route-subjectId="@el.Id" title="Удалить выбранную запись">❌</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Прикрепить предмет</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="BusinesLogic" asp-action="EditGroup" method="get">
+        <input name="id" asp-for="@Model.Id" type="hidden" />
+        <div class="form-group">
+            <label>Предмет</label>
+            <select class="form-control" name="subjectId" asp-items="@(new SelectList(_db.Subject.Where(x=>!Model.Subjects.Contains(x)).ToList(),"Id","Name"))"></select>
+        </div>
+        <div>
+            <button class="btn btn-success" style="width:100%;">Прикрепить</button>
+        </div>
+    </form>
+</div>

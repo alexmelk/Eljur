@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Главная";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Добавить посещение</h2>
+<br />
+<br />
+<body>
+
+    <div class="container">
+        <form asp-action="AddVisit" asp-controller="BusinesLogic" style="margin: 0 auto; width:200px;">
+            <div class="row">
+                <div class="col">
+                    <a class="btn btn-success" style="width:100%;" asp-controller="Visit" asp-action="ChooseGroupView">Добавить</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>

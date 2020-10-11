@@ -30,6 +30,7 @@
                 <td>@(el.Visits.Count()*2)</td>
                 <td align="center">
                     <a class="btn btn-primary" asp-action="RemoveGroup" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="EditGroupView" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
                 </td>
             </tr>
         }

@@ -58,7 +58,7 @@ namespace Eljur
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=BusinesLogic}/{action=Index}");
+                    pattern: "{controller=Settings}/{action=Index}");
             });
         }
     }

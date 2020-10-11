@@ -1,0 +1,69 @@
+﻿@model List<Eljur.Context.Tables.Subject>
+@{
+    ViewData["Title"] = "Предметы";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Редактировать предметы</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список предметов</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Кол-во тем</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+            <tr>
+                <td>@el.Name</td>
+                <td>@el.Themes.Count()</td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveSubject" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Добавить предмет</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="BusinesLogic" asp-action="EditSubject">
+        <div class="form-group">
+            <label>Название предмета</label>
+            <input name="name" class="form-control" placeholder="Философия"/>
+        </div>
+        <div>
+            <button class="btn btn-success" style="width:100%;">Добавить</button>
+        </div>
+    </form>
+</div>
+<br />
+<hr />
+<h6 class="text-center">Изменить предмет</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="BusinesLogic" asp-action="EditSubject">
+        <div class="form-group">
+            <label>Именить</label>
+            <select class="form-control" name="id" asp-items="@(new SelectList(Model, "Id", "Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>На</label>
+            <input name="name" class="form-control" placeholder="Философия" />
+        </div>
+        <div>
+            <button class="btn btn-success" style="width:100%;">Изменить</button>
+        </div>
+    </form>
+</div>
