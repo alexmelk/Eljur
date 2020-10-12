@@ -1,7 +1,61 @@
-﻿@{
+﻿@model VisitViewModel
+@{
     ViewData["Title"] = "Посещения";
 }
 <br />
-<h2 class="text-muted text-center" style="margin-top:0;">Редактировать посещения</h2>
+<h2 class="text-muted text-center" style="margin-top:0;">Добавление посещения</h2>
 <br />
+<h6 class="text-muted text-center">Группа: <b>@Model.Input.Group.Name</b>. Предмет: <b>@Model.Input.Subject.Name</b>.</h6>
 <br />
+<h6 class="text-muted text-center">Доступно <b>@Model.Input.Time</b> час(а/ов) для добавления</h6>
+<br />
+@{int events = Convert.ToInt32(Model.Input.Time / 2);}
+<form asp-controller="Visit" asp-action="AddVisit">
+    <table class="table table-bordered">
+        <thead align="center">
+            <tr>
+                <th rowspan="2">Студент</th>
+                <th colspan="@events">Дата:   <input asp-for="@Model.Date" type="date" placeholder="Дата" /> </th>
+            </tr>
+            <tr>
+                @for (int i = 0; i < events; i++)
+                {
+                    <th>
+                        <div class="row">
+                            <div class="col">
+                                Тип занятия:
+                                <select class="form-control" asp-for="@Model.Output[i].TypeSubject" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))"></select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                Тема:
+                                <select class="form-control" asp-for="@Model.Output[i].ThemeId" asp-items="@(new SelectList(Model.Input.Subject.Themes, "Id", "Name"))"></select>
+                            </div>
+                        </div>
+                    </th>
+
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @{ var counter = 0;}
+            @foreach (var student in Model.Input.Group.Students)
+            {
+            <tr>
+                <td>@student.FIO</td>
+                @for (int i = 0; i < events; i++)
+                {
+            <td>
+                <input asp-for="@Model.Output[i].VisitsModify[counter].StudentId" value="@student.Id"type="hidden" />
+
+                <select class="form-control" asp-for="@Model.Output[i].VisitsModify[counter].TypeVisit" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeVisitEnum))"></select>
+            </td>
+                }
+            </tr>
+                counter++;
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-success">Добавить</button>
+</form>

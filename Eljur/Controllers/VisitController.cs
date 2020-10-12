@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Eljur.Context;
+using Eljur.Context.Tables;
 using Eljur.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Eljur.Controllers
 {
@@ -43,9 +45,31 @@ namespace Eljur.Controllers
         {
             return View("ChooseTimeView", model);
         }
-        public IActionResult ChooseTime(ChoosePropertyVisit model)
+        public IActionResult ChooseTime(ChoosePropertyVisit input)
         {
-            return View("VisitsView");
+            input.Group = _db.Group.Include(x => x.Students).Where(x => x.Id == input.Group.Id).FirstOrDefault();
+            input.Subject = _db.Subject.Include(x => x.Themes).Where(x => x.Id == input.Subject.Id).FirstOrDefault();
+
+            var events = Convert.ToInt32(input.Time / 2);
+            var output = new List<VisitGroupForColumnModel>() { };
+            for (int i = 0; i < events; i++)
+            {
+                var visits = new List<VisitModify>();
+                for (int j = 0; j < input.Group.Students.Count(); j++) visits.Add(new VisitModify());
+
+                output.Add(new VisitGroupForColumnModel() { 
+                    VisitsModify = visits
+                });
+            }
+
+            var model = new VisitViewModel() { Input = input, Output = output, Date = DateTime.Now};
+
+            return View("VisitsView", model);
+        }
+
+        public IActionResult AddVisit(VisitViewModel model)
+        {
+            return View("Index");
         }
     }
 }
