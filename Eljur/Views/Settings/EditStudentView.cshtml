@@ -7,7 +7,7 @@
 <h2 class="text-muted text-center" style="margin-top:0;">Редактировать студентов</h2>
 <br />
 <br />
-<form asp-action="EditStudent" method="post">
+<form asp-action="EditStudent" asp-controller="Settings" method="post">
 <div class="row">
    <input asp-for="@Model.Id" type="hidden"/>
 

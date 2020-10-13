@@ -11,7 +11,6 @@ namespace Eljur.Models
         public int ThemeId { get; set; }
 
         public TypeSubjectEnum TypeSubject { get; set; }
-
         public List<VisitModify> VisitsModify { get; set; }
     }
 }

@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    [Migration("20201010140036_Initia")]
-    partial class Initia
+    [Migration("20201013122521_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -116,6 +116,9 @@ namespace Eljur.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int?>("ThemeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TypeSubject")
                         .HasColumnType("integer");
 
                     b.Property<int>("TypeVisit")
@@ -351,7 +354,7 @@ namespace Eljur.Migrations
 
             modelBuilder.Entity("Eljur.Context.Tables.Visit", b =>
                 {
-                    b.HasOne("Eljur.Context.Tables.Group", "Group")
+                    b.HasOne("Eljur.Context.Tables.Group", null)
                         .WithMany("Visits")
                         .HasForeignKey("GroupId");
 

@@ -29,7 +29,7 @@ namespace Eljur.Controllers
 
         public IActionResult Index()
         {
-            if (User.IsInRole("admin")) return RedirectToAction("Index", "BusinesLogic");
+            if (User.IsInRole("admin")) return RedirectToAction("Index", "Settings");
             return View();
         }
 

@@ -26,8 +26,8 @@
                 <td>@el.Name</td>
                 <td>@el.Subject.Name</td>
                 <td align="center">
-                    <a class="btn btn-primary" asp-action="RemoveTheme" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
-                    <a class="btn btn-primary" asp-action="EditThemeView" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
+                    <a class="btn btn-primary" asp-action="RemoveTheme" asp-route-id="@el.Id" asp-controller="Settings" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="EditThemeView" asp-route-id="@el.Id" asp-controller="Settings" title="Изменить выбранную запись">✏️</a>
                 </td>
             </tr>
         }
@@ -39,7 +39,7 @@
 <hr />
 <br />
 <div style="width: 300px; margin: auto;">
-    <form asp-controller="BusinesLogic" asp-action="EditTheme" method="get" >
+    <form asp-controller="Settings" asp-action="EditTheme" method="get" >
         <div class="form-group">
             <label>Название темы</label>
             <input name="name" class="form-control" placeholder="Переменные" />

@@ -28,8 +28,8 @@
                 <td>@el.Group.Name</td>
                 <td>@(el.Visits.Count()*2)</td>
                 <td align="center">
-                    <a class="btn btn-primary" asp-action="RemoveStudent" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
-                    <a class="btn btn-primary" asp-action="EditStudentView" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
+                    <a class="btn btn-primary" asp-action="RemoveStudent" asp-route-id="@el.Id" asp-controller="Settings" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="EditStudentView" asp-route-id="@el.Id" asp-controller="Settings" title="Изменить выбранную запись">✏️</a>
                 </td>
             </tr>
         }
@@ -41,7 +41,7 @@
 <hr />
 <br />
 <div style="width: 300px; margin: auto;">
-    <form asp-controller="BusinesLogic" asp-action="EditStudent">
+    <form asp-controller="Settings" asp-action="EditStudent" method="get">
         <div class="form-group">
             <label>Ф.И.О. студента</label>
             <input name="fio" class="form-control" placeholder="Иванов И.И." />

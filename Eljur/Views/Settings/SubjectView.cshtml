@@ -25,7 +25,7 @@
                 <td>@el.Name</td>
                 <td>@el.Themes.Count()</td>
                 <td align="center">
-                    <a class="btn btn-primary" asp-action="RemoveSubject" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="RemoveSubject" asp-route-id="@el.Id" asp-controller="Settings" title="Удалить выбранную запись">❌</a>
                 </td>
             </tr>
         }
@@ -37,7 +37,7 @@
 <hr />
 <br />
 <div style="width: 300px; margin: auto;">
-    <form asp-controller="BusinesLogic" asp-action="EditSubject">
+    <form asp-controller="Settings" asp-action="EditSubject">
         <div class="form-group">
             <label>Название предмета</label>
             <input name="name" class="form-control" placeholder="Философия"/>
@@ -53,7 +53,7 @@
 <hr />
 <br />
 <div style="width: 300px; margin: auto;">
-    <form asp-controller="BusinesLogic" asp-action="EditSubject">
+    <form asp-controller="Settings" asp-action="EditSubject">
         <div class="form-group">
             <label>Именить</label>
             <select class="form-control" name="id" asp-items="@(new SelectList(Model, "Id", "Name"))"></select>

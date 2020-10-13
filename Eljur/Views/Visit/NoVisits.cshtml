@@ -1,0 +1,15 @@
+﻿@model ChoosePropertyVisit
+@{
+    ViewData["Title"] = "NoVisit";
+}
+<br />
+<br />
+<br />
+<br />
+
+<h4 style="text-align:center">К группе [@Model.Group.Name] не прикреплён предмет [@Model.Subject.Name] 🙌</h4>
+<br />
+<div style="margin: 0 auto;width:200px;">
+    <a class="btn btn-success" asp-action="VisitView" asp-controller="Settings" style="width:100%">Назад</a>
+</div>
+

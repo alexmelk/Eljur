@@ -7,7 +7,7 @@
 <h2 class="text-muted text-center" style="margin-top:0;">Редактировать тему</h2>
 <br />
 <br />
-<form asp-action="EditTheme" method="post">
+<form asp-action="EditTheme" asp-controller="Settings" method="post">
     <div class="row">
         <input asp-for="@Model.Id" type="hidden" />
 

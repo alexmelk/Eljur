@@ -29,8 +29,8 @@
                 <td>@el.Subjects.Count()</td>
                 <td>@(el.Visits.Count()*2)</td>
                 <td align="center">
-                    <a class="btn btn-primary" asp-action="RemoveGroup" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
-                    <a class="btn btn-primary" asp-action="EditGroupView" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
+                    <a class="btn btn-primary" asp-action="RemoveGroup" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="EditGroupView" asp-controller="Settings" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
                 </td>
             </tr>
         }
@@ -42,7 +42,7 @@
 <hr />
 <br />
 <div style="width: 300px; margin: auto;">
-    <form asp-controller="BusinesLogic" asp-action="EditGroup">
+    <form asp-controller="Settings" asp-action="EditGroup">
         <div class="form-group">
             <label>Название группы</label>
             <input name="name" class="form-control" placeholder="ИВТ-20" />
@@ -58,7 +58,7 @@
 <hr />
 <br />
 <div style="width: 300px; margin: auto;">
-    <form asp-controller="BusinesLogic" asp-action="EditGroup">
+    <form asp-controller="Settings" asp-action="EditGroup">
         <div class="form-group">
             <label>Именить</label>
             <select class="form-control" name="id" asp-items="@(new SelectList(Model,"Id","Name"))"></select>

@@ -352,7 +352,7 @@ namespace Eljur.Migrations
 
             modelBuilder.Entity("Eljur.Context.Tables.Visit", b =>
                 {
-                    b.HasOne("Eljur.Context.Tables.Group", "Group")
+                    b.HasOne("Eljur.Context.Tables.Group", null)
                         .WithMany("Visits")
                         .HasForeignKey("GroupId");
 

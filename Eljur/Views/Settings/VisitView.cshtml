@@ -1,0 +1,30 @@
+﻿@model ChoosePropertyVisit
+@inject Eljur.Context.dbContext _db
+@{
+    ViewData["Title"] = "Отчёт";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Посещаемость</h2>
+<br />
+<br />
+<body>
+    <form asp-controller="Visit" asp-action="GetExcel" style="margin: 0 auto; width:300px; ">
+        <div>
+            <div class="form-group" style="width:100%">
+                <label>Выберите группу</label>
+                <select class="form-control" asp-for="@Model.Group.Id" asp-items="@(new SelectList(_db.Group, "Id", "Name"))"></select>
+            </div>
+        </div>
+        <div>
+            <div class="form-group"style="width:100%">
+                <label>Выберите предмет</label>
+                <select class="form-control" asp-for="@Model.Subject.Id" asp-items="@(new SelectList(_db.Subject, "Id", "Name"))"></select>
+            </div>
+        </div>
+        <br />
+        <button class="btn btn-success" style="width:100%">Создать</button>
+    </form>
+
+
+</body>
+

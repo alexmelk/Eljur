@@ -24,7 +24,7 @@
             <tr>
                 <td>@el.Name</td>
                 <td align="center">
-                    <a class="btn btn-primary" asp-action="RemoveGroupSubject" asp-route-groupId="@Model.Id" asp-route-subjectId="@el.Id" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="RemoveGroupSubject" asp-controller="Settings" asp-route-groupId="@Model.Id" asp-route-subjectId="@el.Id" title="Удалить выбранную запись">❌</a>
                 </td>
             </tr>
         }
@@ -36,7 +36,7 @@
 <hr />
 <br />
 <div style="width: 300px; margin: auto;">
-    <form asp-controller="BusinesLogic" asp-action="EditGroup" method="get">
+    <form asp-controller="Settings" asp-action="EditGroup" method="get">
         <input name="id" asp-for="@Model.Id" type="hidden" />
         <div class="form-group">
             <label>Предмет</label>

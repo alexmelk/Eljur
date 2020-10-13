@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
-    public partial class Initia : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -234,10 +234,11 @@ namespace Eljur.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Date = table.Column<DateTime>(nullable: false),
                     TypeVisit = table.Column<int>(nullable: false),
-                    GroupId = table.Column<int>(nullable: true),
+                    TypeSubject = table.Column<int>(nullable: false),
                     SubjectId = table.Column<int>(nullable: true),
                     ThemeId = table.Column<int>(nullable: true),
-                    StudentId = table.Column<int>(nullable: true)
+                    StudentId = table.Column<int>(nullable: true),
+                    GroupId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
