@@ -11,27 +11,32 @@
 <h6 class="text-center">Список студентов</h6>
 <hr />
 <br />
-<table class="table table-bordered" id="tableid">
+<table class="table table-bordered" id="tableid" style="text-align:center">
     <thead>
         <tr>
             <th>ФИО</th>
             <th>Группа</th>
-            <th>Посещений (часы)</th>
+            <th>Посещения (часы)</th>
+            <th>Пропуски (часы)</th>
+            <th>Всего занятий (часы)</th>
             <th>Действие</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var el in Model)
         {
-            <tr>
-                <td>@el.FIO</td>
-                <td>@el.Group.Name</td>
-                <td>@(el.Visits.Count()*2)</td>
-                <td align="center">
-                    <a class="btn btn-primary" asp-action="RemoveStudent" asp-route-id="@el.Id" asp-controller="Settings" title="Удалить выбранную запись">❌</a>
-                    <a class="btn btn-primary" asp-action="EditStudentView" asp-route-id="@el.Id" asp-controller="Settings" title="Изменить выбранную запись">✏️</a>
-                </td>
-            </tr>
+            var present = el.Visits.Where(x => x.TypeVisit == Eljur.Context.Tables.TypeVisitEnum.Present);
+        <tr>
+            <td>@el.FIO</td>
+            <td>@el.Group.Name</td>
+            <td>@(present.Count()*2)</td>
+            <td>@((el.Visits.Count()-present.Count())*2)</td>
+            <td>@(el.Visits.Count()*2)</td>
+            <td align="center">
+                <a class="btn btn-primary" asp-action="RemoveStudent" asp-route-id="@el.Id" asp-controller="Settings" title="Удалить выбранную запись">❌</a>
+                <a class="btn btn-primary" asp-action="EditStudentView" asp-route-id="@el.Id" asp-controller="Settings" title="Изменить выбранную запись">✏️</a>
+            </td>
+        </tr>
         }
     </tbody>
 </table>

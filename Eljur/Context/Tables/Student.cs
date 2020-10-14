@@ -11,7 +11,9 @@ namespace Eljur.Context.Tables
 
         public string FIO { get; set; }
 
+        [System.ComponentModel.DataAnnotations.Required]
         public Group Group { get; set; }
+
         public List<Visit> Visits { get; set; }
 
     }

@@ -57,9 +57,9 @@ namespace Eljur.Controllers
             input.Group = _db.Group.Include(x => x.Students).Where(x => x.Id == input.Group.Id).FirstOrDefault();
             input.Subject = _db.Subject.Include(x => x.Themes).Where(x => x.Id == input.Subject.Id).FirstOrDefault();
 
-            var events = Convert.ToInt32(input.Time / 2);
+            var tableColumns = Convert.ToInt32(input.Time / 2);
             var output = new List<VisitGroupForColumnModel>() { };
-            for (int i = 0; i < events; i++)
+            for (int i = 0; i < tableColumns; i++)
             {
                 var visits = new List<VisitModify>();
                 for (int j = 0; j < input.Group.Students.Count(); j++) visits.Add(new VisitModify());
@@ -73,7 +73,11 @@ namespace Eljur.Controllers
 
             return View("VisitsView", model);
         }
-
+        /// <summary>
+        /// Добавление посещений
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public IActionResult AddVisit(VisitViewModel model)
         {
             List<Visit> visits = new List<Visit>();
@@ -99,11 +103,17 @@ namespace Eljur.Controllers
                 }
             }
 
-            _db.Visit.AddRange(visits);
+            
+_db.Visit.AddRange(visits);
             _db.SaveChanges();
 
-            return View("Index");
+            return RedirectToAction("Index", "Settings");
         }
+        /// <summary>
+        /// Редактирование посещения
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public IActionResult EditVisit(ChoosePropertyVisit model)
         {
             model.Group = _db.Group.Find(model.Group.Id);
@@ -133,6 +143,11 @@ namespace Eljur.Controllers
 
             return View("Index");
         }
+        /// <summary>
+        /// Удалить посещение
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IActionResult RemoveVisit(int id)
         {
             var visit = _db.Visit.Find(id);
@@ -141,6 +156,12 @@ namespace Eljur.Controllers
 
             return View("Index");
         }
+        /// <summary>
+        /// Отображаем настройку "Посещения"
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
         public IActionResult VisitView(ChoosePropertyVisit model, string action)
         {
             model.Group = _db.Group.Find(model.Group.Id);
@@ -160,6 +181,11 @@ namespace Eljur.Controllers
             }
             return View("VisitView");
         }
+        /// <summary>
+        /// Создаём excel
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public IActionResult GetExcel(ChoosePropertyVisit model)
         {        
             return GenerateExcel(model);
@@ -180,8 +206,9 @@ namespace Eljur.Controllers
                     .Where(x => x.Id == model.Group.Id)
                     .FirstOrDefault();
 
+                var students = group.Students.OrderBy(x => x.FIO);
                 //посещаемость студентов
-                for (int i = 0; i < group.Students.Count();i++)
+                for (int i = 0; i < students.Count();i++)
                 {
                     var visits = group.Students[i].Visits.Where(x => x.Subject.Id == model.Subject.Id).ToList();
 
@@ -194,6 +221,7 @@ namespace Eljur.Controllers
 
                 //дата
                 var firstStudent = group.Students.FirstOrDefault();
+
                 var visitsForSubject = firstStudent.Visits.Where(x => x.Subject.Id == model.Subject.Id).ToList();
 
                 for (int i = 0; i < visitsForSubject.Count(); i++)

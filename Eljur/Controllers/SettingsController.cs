@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Eljur.Context.Tables;
+using Eljur.Context;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,21 +11,33 @@ namespace Eljur.Controllers
 {
     public class SettingsController : Controller
     {
-        Context.dbContext _db;
-        public SettingsController(Context.dbContext db)
+        public dbContext _db;
+
+        public SettingsController(dbContext db)
         {
             _db = db;
         }
-
+        /// <summary>
+        /// Главная страница контроллера settings
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Index()
         {
             return View();
         }
+        /// <summary>
+        /// Посещаемость
+        /// </summary>
+        /// <returns></returns>
         //main view
         public IActionResult VisitView()
         {
             return View();
         }
+        /// <summary>
+        /// Группы
+        /// </summary>
+        /// <returns></returns>
         public IActionResult GroupView()
         {
          var model = _db.Group.Include(a => a.Students)
@@ -33,44 +46,86 @@ namespace Eljur.Controllers
                 .ToList();
             return View(model);
         }
+        /// <summary>
+        /// Редактирование группы
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IActionResult EditGroupView(int id)
         {
             var model = _db.Group.Include(a => a.Subjects).Where(x => x.Id == id).FirstOrDefault();
             return View(model);
         }
+        /// <summary>
+        /// Студенты
+        /// </summary>
+        /// <returns></returns>
         public IActionResult StudentView()
         {
             var model = _db.Student.Include(a => a.Group)
                 .Include(a => a.Visits)
                 .ToList();
+
             return View(model);
         }
+        /// <summary>
+        /// Редактирование студентов
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IActionResult EditStudentView(int id)
         {
             var model = _db.Student.Include(x => x.Group).Where(x => x.Id == id).FirstOrDefault();
             return View(model);
         }
+        /// <summary>
+        /// Предметы
+        /// </summary>
+        /// <returns></returns>
         public IActionResult SubjectView()
         {
             var model = _db.Subject.Include(a => a.Themes).ToList();
             return View(model);
         }
+        /// <summary>
+        /// Темы занятий
+        /// </summary>
+        /// <returns></returns>
         public IActionResult ThemeView()
         {
-            var model = _db.Theme.Include(x=>x.Subject).ToList();
+            var model = _db.Theme.Include(x => x.Subject).ToList();
             return View(model);
         }
+        /// <summary>
+        /// Редактирование тем занятий
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IActionResult EditThemeView(int id)
         {
             var model = _db.Theme.Include(x => x.Subject).Where(x => x.Id == id).FirstOrDefault();
             return View(model);
-        }
-        
+        }     
+        /// <summary>
+        /// Добавить посещение
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
         //visit
         public IActionResult AddVisit(int time)
         {
             return RedirectToAction("VisitView");
         }
+
+
+
+        /// <summary>
+        /// Редактировать или создать группу
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <param name="subjectId"></param>
+        /// <returns></returns>
         //group
         public IActionResult EditGroup(int? id, string name, int? subjectId)
         {
@@ -90,33 +145,55 @@ namespace Eljur.Controllers
                 else
                 {
                     find.Subjects.Add(_db.Subject.Find(subjectId));
+
                     _db.SaveChanges();
+
                     var m = _db.Group.Include(a => a.Subjects).Where(x => x.Id == id).FirstOrDefault();
+
                     return View("EditGroupView", m);
                 }
+
                 _db.SaveChanges();
             }
+
             var model = _db.Group.Include(a => a.Students)
                 .Include(a => a.Subjects)
                 .Include(a => a.Visits)
                 .ToList();
+
             return RedirectToAction("GroupView", model);
         }
+        /// <summary>
+        /// Удалить группу
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IActionResult RemoveGroup(int id)
         {
-            _db.Group.Remove(_db.Group.Find(id));
+            var group = _db.Group
+                .Include(x => x.Students)
+                .ThenInclude(x => x.Visits)
+                .Include(x => x.Subjects)
+                .Include(x => x.Visits)
+                .Where(x => x.Id == id).FirstOrDefault();
+
+            _db.Group.Remove(group);
             _db.SaveChanges();
 
-             var model = _db.Group.Include(a => a.Students)
-                .Include(a => a.Subjects)
-                .Include(a => a.Visits)
+             var model = _db.Group.Include(x => x.Students)
+                .Include(x => x.Subjects)
+                .Include(x => x.Visits)
                 .ToList();
+
             return RedirectToAction("GroupView", model);
         }
-        public IActionResult AddGroup(string name)
-        {
-            return RedirectToAction("GroupView");
-        }
+        /// <summary>
+        /// Редактировать или создать студента
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="groupid"></param>
+        /// <param name="fio"></param>
+        /// <returns></returns>
         //student
         public IActionResult EditStudent(int? id, int? groupid, string fio)
         {
@@ -127,9 +204,11 @@ namespace Eljur.Controllers
                 _db.Student.Add(new Student() { FIO = fio, Group = _db.Group.Find(groupid) });
                 _db.SaveChanges();
             }
+
             var model = _db.Student.Include(a => a.Group)
                 .Include(a => a.Visits)
                 .ToList();
+
             return RedirectToAction("StudentView", model);
         }
         [HttpPost]
@@ -145,11 +224,23 @@ namespace Eljur.Controllers
             var model = _db.Student.Include(a => a.Group)
                 .Include(a => a.Visits)
                 .ToList();
+
             return RedirectToAction("StudentView", model);
         }
+        /// <summary>
+        /// Удаление студента
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IActionResult RemoveStudent(int id)
         {
-            _db.Student.Remove(_db.Student.Find(id));
+            var student = _db.Student
+                .Include(x => x.Visits)
+                .Include(x => x.Group)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
+
+            _db.Student.Remove(student);
             _db.SaveChanges();
 
             var model = _db.Student.Include(a => a.Group)
@@ -158,6 +249,12 @@ namespace Eljur.Controllers
             
             return RedirectToAction("StudentView", model);
         }
+        /// <summary>
+        /// Редактировать или создать предмет
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
         //subject
         public IActionResult EditSubject(int? id, string name)
         {
@@ -177,15 +274,35 @@ namespace Eljur.Controllers
 
             return RedirectToAction("SubjectView", model);
         }
+        /// <summary>
+        /// Удаление предмета
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IActionResult RemoveSubject(int id)
         {
-            _db.Subject.Remove(_db.Subject.Find(id));
+            var subject = _db.Subject
+                .Include(x => x.Themes)
+                .ThenInclude(x => x.Visits)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
+
+            subject.Themes.Clear();
+
+            _db.Subject.Remove(subject);
             _db.SaveChanges();
 
             var model = _db.Subject.Include(a => a.Themes).ToList();
 
             return RedirectToAction("SubjectView", model);
         }
+        /// <summary>
+        /// Редактировать или создать тему
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <param name="subjectId"></param>
+        /// <returns></returns>
         //themes
         public IActionResult EditTheme(int? id, string name, int subjectId)
         {
@@ -195,15 +312,6 @@ namespace Eljur.Controllers
                 _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId) });
                 _db.SaveChanges();
             }
-
-            var model = _db.Theme.Include(a => a.Subject).ToList();
-
-            return RedirectToAction("ThemeView", model);
-        }
-        public IActionResult RemoveTheme(int id)
-        {
-            _db.Theme.Remove(_db.Theme.Find(id));
-            _db.SaveChanges();
 
             var model = _db.Theme.Include(a => a.Subject).ToList();
 
@@ -223,6 +331,34 @@ namespace Eljur.Controllers
 
             return RedirectToAction("ThemeView", model);
         }
+        /// <summary>
+        /// Удалить тему
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IActionResult RemoveTheme(int id)
+        {
+            var theme = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x=>x.Visits)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
+
+            theme.Visits.Clear();
+
+            _db.Theme.Remove(theme);
+            _db.SaveChanges();
+
+            var model = _db.Theme.Include(a => a.Subject).ToList();
+
+            return RedirectToAction("ThemeView", model);
+        }
+        /// <summary>
+        /// Удалить прикрепление предмета к группе
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <param name="subjectId"></param>
+        /// <returns></returns>
         //group-subject
         public IActionResult RemoveGroupSubject(int groupId, int subjectId)
         {

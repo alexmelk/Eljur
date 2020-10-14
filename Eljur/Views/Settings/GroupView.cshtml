@@ -10,29 +10,27 @@
 <h6 class="text-center">Список групп</h6>
 <hr />
 <br />
-<table class="table table-bordered" id="tableid">
+<table class="table table-bordered" id="tableid" style="text-align:center">
     <thead>
         <tr>
             <th>Название</th>
             <th>Студентов в группе (чел.)</th>
             <th>Предметов в группе (шт.)</th>
-            <th>Посещаемость (часов)</th>
             <th>Действие</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var el in Model)
         {
-            <tr>
-                <td>@el.Name</td>
-                <td>@el.Students.Count()</td>
-                <td>@el.Subjects.Count()</td>
-                <td>@(el.Visits.Count()*2)</td>
-                <td align="center">
-                    <a class="btn btn-primary" asp-action="RemoveGroup" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
-                    <a class="btn btn-primary" asp-action="EditGroupView" asp-controller="Settings" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
-                </td>
-            </tr>
+        <tr>
+            <td>@el.Name</td>
+            <td>@el.Students.Count()</td>
+            <td>@el.Subjects.Count()</td>
+            <td align="center">
+                <a class="btn btn-primary" asp-action="RemoveGroup" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                <a class="btn btn-primary" asp-action="EditGroupView" asp-controller="Settings" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
+            </td>
+        </tr>
         }
     </tbody>
 </table>

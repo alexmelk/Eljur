@@ -13,9 +13,8 @@ namespace Eljur.Context
     public class dbContext : IdentityDbContext<User>
     {
         public dbContext(DbContextOptions<dbContext> options) : base(options)
-        {
-            //Database.EnsureCreated();
-        }
+        { }
+
         public DbSet<User> User { get; set; }
 
         public DbSet<Student> Student { get; set; }

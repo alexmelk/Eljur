@@ -11,6 +11,9 @@ namespace Eljur.Context.Tables
 
         public string Name { get; set; }
 
+        [System.ComponentModel.DataAnnotations.Required]
         public Subject Subject { get; set; }
+
+        public List<Visit> Visits { get; set; }
     }
 }
