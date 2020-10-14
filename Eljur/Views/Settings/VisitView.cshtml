@@ -8,7 +8,7 @@
 <br />
 <br />
 <body>
-    <form asp-controller="Visit" asp-action="GetExcel" style="margin: 0 auto; width:300px; ">
+    <form asp-controller="Visit" asp-action="VisitView" style="margin: 0 auto; width:300px; ">
         <div>
             <div class="form-group" style="width:100%">
                 <label>Выберите группу</label>
@@ -16,13 +16,19 @@
             </div>
         </div>
         <div>
-            <div class="form-group"style="width:100%">
+            <div class="form-group" style="width:100%">
                 <label>Выберите предмет</label>
                 <select class="form-control" asp-for="@Model.Subject.Id" asp-items="@(new SelectList(_db.Subject, "Id", "Name"))"></select>
             </div>
         </div>
         <br />
-        <button class="btn btn-success" style="width:100%">Создать</button>
+        <div>
+            <button class="btn btn-success" style="width:100%" name="action" value="create">Создать</button>
+        </div>
+        <br />
+        <div>
+            <button class="btn btn-info" style="width:100%" name="action" value="edit">Редактировать</button>
+        </div>
     </form>
 
 

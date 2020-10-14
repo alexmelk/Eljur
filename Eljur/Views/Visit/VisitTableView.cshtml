@@ -1,0 +1,39 @@
+﻿@model List<Eljur.Context.Tables.Visit>
+@{
+    ViewData["Title"] = "VisitTableView";
+}
+<br />
+<h2 class="text-muted text-center">Редактировать посещения</h2>
+<br />
+<br />
+<br />
+<table class="table table-bordered" id="tableid">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Студент</th>
+            <th>Предмет</th>
+            <th>Тема</th>
+            <th>Тип посещения</th>
+            <th>Вид занятия</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+        <tr>
+            <td>@el.Date.ToString("dd.MM.yyyy")</td>
+            <td>@el.Student.FIO</td>
+            <td>@el.Subject.Name</td>
+            <td>@el.Theme.Name</td>
+            <td>@Html.DisplayFor(x => el.TypeVisit)</td>
+            <td>@Html.DisplayFor(x => el.TypeSubject)</td>
+            <td align="center">
+                <a class="btn btn-primary" asp-action="RemoveVisit" asp-controller="Visit" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                <a class="btn btn-primary" asp-action="EditVisitView" asp-controller="Visit" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>

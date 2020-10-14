@@ -1,0 +1,33 @@
+﻿@inject Eljur.Context.dbContext _db
+@model Eljur.Context.Tables.Visit
+@{
+    ViewData["Title"] = "EditVisitView";
+}
+<br />
+<h2 class="text-muted text-center" style="margin-top:0;">Редактировать посещение</h2>
+<br />
+<br />
+<hr />
+<form asp-controller="Visit" asp-action="EditVisitView" method="post">
+    <input type="hidden" asp-for="@Model.Id"/>
+    <div style="margin:0 auto; width:300px;">
+        <div class="row">
+            <div class="col-6">
+                <div class="form-group">
+                    <label>Тип занятия</label>
+                    <select class="form-control" asp-for="@Model.TypeSubject" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))"></select>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label>Тип занятия</label>
+                    <select class="form-control" asp-for="@Model.TypeVisit" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeVisitEnum))"></select>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <button class="btn btn-success" style="width:100%">Обновить</button>
+        </div>
+    </div>
+</form>

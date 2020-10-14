@@ -104,23 +104,66 @@ namespace Eljur.Controllers
 
             return View("Index");
         }
-
-
-        public IActionResult GetExcel(ChoosePropertyVisit model)
+        public IActionResult EditVisit(ChoosePropertyVisit model)
         {
             model.Group = _db.Group.Find(model.Group.Id);
             model.Subject = _db.Subject.Find(model.Subject.Id);
 
-            var group = _db.Group.Include(x => x.Visits).Include(x=>x.Subjects).Where(x => x.Id == model.Group.Id).FirstOrDefault();
+            var visits = _db.Visit
+                .Include(x => x.Student)
+                .ThenInclude(x => x.Group)
+                .Include(x => x.Subject)
+                .Include(x => x.Theme)
+                .Where(x => ((x.Subject.Id == model.Subject.Id) && (x.Student.Group.Id == model.Group.Id))).ToList();
+
+            return View("VisitTableView", visits);
+        }
+        public IActionResult EditVisitView(int id)
+        {
+            var model = _db.Visit.Find(id);
+            return View("EditVisitView", model);
+        }
+        [HttpPost]
+        public IActionResult EditVisitView(Visit model)
+        {
+            var visit = _db.Visit.Find(model.Id);
+            visit.TypeSubject = model.TypeSubject;
+            visit.TypeVisit = model.TypeVisit;
+            _db.SaveChanges();
+
+            return View("Index");
+        }
+        public IActionResult RemoveVisit(int id)
+        {
+            var visit = _db.Visit.Find(id);
+            _db.Visit.Remove(visit);
+            _db.SaveChanges();
+
+            return View("Index");
+        }
+        public IActionResult VisitView(ChoosePropertyVisit model, string action)
+        {
+            model.Group = _db.Group.Find(model.Group.Id);
+            model.Subject = _db.Subject.Find(model.Subject.Id);
+
+            var group = _db.Group.Include(x => x.Visits).Include(x => x.Subjects).Where(x => x.Id == model.Group.Id).FirstOrDefault();
             var subject = group.Subjects.Where(x => x.Id == model.Subject.Id).ToList();
             if (subject.Count() == 0)
             {
                 return View("NoVisits", model);
             }
-                 
+
+            switch (action)
+            {
+                case "create": { return GetExcel(model); }
+                case "edit": { return EditVisit(model); }
+            }
+            return View("VisitView");
+        }
+        public IActionResult GetExcel(ChoosePropertyVisit model)
+        {        
             return GenerateExcel(model);
         }
-
         public FileResult GenerateExcel(ChoosePropertyVisit model)
         {
             Stream stream = new FileStream(path: ".//file.xlsx", FileMode.Create);
@@ -181,7 +224,6 @@ namespace Eljur.Controllers
             stream.Position = 0;
             return File(stream, "application/xlsx", $"Посещаемость[{model.Group.Name} - {model.Subject.Name}].xlsx");
         }
-
         public void WriteStudentsVisits(List<Visit> visits, ExcelPackage package, int index)
         {
             int validHours = 0;
@@ -225,8 +267,6 @@ namespace Eljur.Controllers
             package.Workbook.Worksheets["Лист1"].Cells[valid.Address].Value = validHours;
             var inValid = package.Workbook.Names[$"invalid{index + 1}"];
             package.Workbook.Worksheets["Лист1"].Cells[inValid.Address].Value = inValidHours;
-
-
 
         }
 
