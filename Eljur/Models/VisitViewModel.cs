@@ -10,6 +10,7 @@ namespace Eljur.Models
     {
         public DateTime Date { get; set; }
         public int SubjectId { get; set; }
+        public int GroupId { get; set; }
 
         public ChoosePropertyVisit Input { get; set; }
         public List<VisitGroupForColumnModel> Output { get; set; }

@@ -3,15 +3,17 @@ using System;
 using Eljur.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20201015113055_global fix")]
+    partial class globalfix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +46,7 @@ namespace Eljur.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int>("GroupId")
+                    b.Property<int?>("GroupId")
                         .HasColumnType("integer");
 
                     b.Property<int>("SubjectId")
@@ -64,7 +66,7 @@ namespace Eljur.Migrations
 
                     b.HasIndex("ThemeId");
 
-                    b.ToTable("GroupVisit");
+                    b.ToTable("Visit");
                 });
 
             modelBuilder.Entity("Eljur.Context.Tables.Student", b =>
@@ -348,11 +350,9 @@ namespace Eljur.Migrations
 
             modelBuilder.Entity("Eljur.Context.Tables.GroupVisit", b =>
                 {
-                    b.HasOne("Eljur.Context.Tables.Group", "Group")
-                        .WithMany("GroupVisits")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Eljur.Context.Tables.Group", null)
+                        .WithMany("Visits")
+                        .HasForeignKey("GroupId");
 
                     b.HasOne("Eljur.Context.Tables.Subject", "Subject")
                         .WithMany()

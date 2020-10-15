@@ -1,9 +1,9 @@
-﻿@model List<Eljur.Context.Tables.Visit>
+﻿@model List<Eljur.Context.Tables.GroupVisit>
 @{
     ViewData["Title"] = "VisitTableView";
 }
 <br />
-<h2 class="text-muted text-center">Редактировать посещения</h2>
+<h2 class="text-muted text-center">Редактировать посещения группы [@Model.FirstOrDefault().Group.Name]</h2>
 <br />
 <br />
 <br />
@@ -20,20 +20,24 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var el in Model)
+        @foreach (var group in Model)
         {
-        <tr>
-            <td>@el.Date.ToString("dd.MM.yyyy")</td>
-            <td>@el.Student.FIO</td>
-            <td>@el.Subject.Name</td>
-            <td>@el.Theme.Name</td>
-            <td>@Html.DisplayFor(x => el.TypeVisit)</td>
-            <td>@Html.DisplayFor(x => el.TypeSubject)</td>
-            <td align="center">
-                <a class="btn btn-primary" asp-action="RemoveVisit" asp-controller="Visit" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
-                <a class="btn btn-primary" asp-action="EditVisitView" asp-controller="Visit" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
-            </td>
-        </tr>
+            foreach (var studentVisit in group.StudentVisits)
+            {
+                <tr>
+                    <td>@group.Date.ToString("dd.MM.yyyy")</td>
+                    <td>@studentVisit.Student.FIO</td>
+                    <td>@group.Subject.Name</td>
+                    <td>@group.Theme.Name</td>
+                    <td>@Html.DisplayFor(x => studentVisit.TypeVisit)</td>
+                    <td>@Html.DisplayFor(x => group.TypeSubject)</td>
+                    <td align="center">
+                        <a class="btn btn-primary" asp-action="RemoveStudentVisit" asp-controller="Visit" asp-route-id="@studentVisit.Id" 
+                           asp-route-groupId="@studentVisit.Student.Group.Id" asp-route-subjectId="@group.Subject.Id" title="Удалить выбранную запись">❌</a>
+                        <a class="btn btn-primary" asp-action="EditStudentVisitView" asp-controller="Visit" asp-route-id="@studentVisit.Id"  title="Изменить выбранную запись">✏️</a>
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </table>

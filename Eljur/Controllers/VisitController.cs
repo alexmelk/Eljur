@@ -66,12 +66,13 @@ namespace Eljur.Controllers
                 var visits = new List<VisitModify>();
                 for (int j = 0; j < input.Group.Students.Count(); j++) visits.Add(new VisitModify());
 
-                output.Add(new VisitGroupForColumnModel() { 
+                output.Add(new VisitGroupForColumnModel()
+                {
                     VisitsModify = visits
                 });
             }
 
-            var model = new VisitViewModel() { Input = input, Output = output, Date = DateTime.Now};
+            var model = new VisitViewModel() { Input = input, Output = output, Date = DateTime.Now };
 
             return View("VisitsView", model);
         }
@@ -82,31 +83,39 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult AddVisit(VisitViewModel model)
         {
-            List<Visit> visits = new List<Visit>();
             var date = model.Date;
-            foreach(var column in model.Output)
+            foreach (var column in model.Output)
             {
                 var theme = _db.Theme.Find(column.ThemeId);
                 var typeSubject = column.TypeSubject;
 
-                foreach(var visitModify in column.VisitsModify)
+                var visit = new GroupVisit()
                 {
-                    var visit = new Visit()
+                    Date = date,
+                    TypeSubject = typeSubject,
+                    Theme = theme,
+                    Subject = _db.Subject.Find(model.SubjectId),
+                    Group = _db.Group.Find(model.GroupId),
+                };
+                _db.GroupVisit.Add(visit);
+
+
+                foreach (var visitModify in column.VisitsModify)
+                {
+                    var studentVisit = new StudentVisit()
                     {
-                        Date = date,
-                        TypeSubject = typeSubject,
                         TypeVisit = visitModify.TypeVisit,
                         Student = _db.Student.Find(visitModify.StudentId),
-                        Theme = theme,
-                        Subject = _db.Subject.Find(model.SubjectId),
-                        
+                        GroupVisit = visit,
                     };
-                    visits.Add(visit);
+                    _db.StudentVisit.Add(studentVisit);
+
                 }
+
+                _db.SaveChanges();
+
             }
 
-            
-            _db.Visit.AddRange(visits);
             _db.SaveChanges();
 
             return View("VisitAddedView");
@@ -116,47 +125,74 @@ namespace Eljur.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public IActionResult EditVisit(ChoosePropertyVisit model)
+        public IActionResult EditGroupVisit(ChoosePropertyVisit model)
         {
             model.Group = _db.Group.Find(model.Group.Id);
             model.Subject = _db.Subject.Find(model.Subject.Id);
 
-            var visits = _db.Visit
-                .Include(x => x.Student)
-                .ThenInclude(x => x.Group)
+            var visits = _db.GroupVisit
+                .Include(x => x.StudentVisits)
+                .ThenInclude(x => x.Student)
                 .Include(x => x.Subject)
                 .Include(x => x.Theme)
-                .Where(x => ((x.Subject.Id == model.Subject.Id) && (x.Student.Group.Id == model.Group.Id))).ToList();
+                .Where(x => ((x.Subject.Id == model.Subject.Id) && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.Group.Id))).ToList();
 
             return View("VisitTableView", visits);
         }
-        public IActionResult EditVisitView(int id)
+        public IActionResult EditStudentVisitView(int id)
         {
-            var model = _db.Visit.Find(id);
+            var model = _db.StudentVisit
+                .Include(x => x.Student)
+                .Include(x => x.GroupVisit)
+                .ThenInclude(x => x.Subject)
+                .Include(x => x.GroupVisit)
+                .ThenInclude(x => x.Group)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
+
             return View("EditVisitView", model);
         }
         [HttpPost]
-        public IActionResult EditVisitView(Visit model)
+        public IActionResult EditStudentVisitView(StudentVisit model, int subjectId, int groupId)
         {
-            var visit = _db.Visit.Find(model.Id);
-            visit.TypeSubject = model.TypeSubject;
+            var visit = _db.StudentVisit.Find(model.Id);
             visit.TypeVisit = model.TypeVisit;
             _db.SaveChanges();
 
-            return View("Index");
+            var visits = _db.GroupVisit
+                .Include(x => x.StudentVisits)
+                .ThenInclude(x => x.Student)
+                .Include(x => x.Subject)
+                .Include(x => x.Group)
+                .Include(x => x.Theme)
+                .Where(x => ((x.Subject.Id == subjectId)
+                        && (x.StudentVisits.FirstOrDefault().Student.Group.Id == groupId)))
+                .ToList();
+
+            return View("VisitTableView", visits);
         }
         /// <summary>
         /// Удалить посещение
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IActionResult RemoveVisit(int id)
+        public IActionResult RemoveStudentVisit(int id, int groupId, int subjectId)
         {
-            var visit = _db.Visit.Find(id);
-            _db.Visit.Remove(visit);
+            var visit = _db.StudentVisit.Find(id);
+            _db.StudentVisit.Remove(visit);
             _db.SaveChanges();
 
-            return View("Index");
+            var visits = _db.GroupVisit
+                             .Include(x => x.StudentVisits)
+                             .ThenInclude(x => x.Student)
+                             .Include(x => x.Subject)
+                             .Include(x => x.Group)
+                             .Include(x => x.Theme)
+                             .Where(x => ((x.Subject.Id == subjectId)
+                             && (x.StudentVisits.FirstOrDefault().Student.Group.Id == groupId)))
+                             .ToList();
+
+            return View("VisitTableView", visits);
         }
         /// <summary>
         /// Отображаем настройку "Посещения"
@@ -169,7 +205,7 @@ namespace Eljur.Controllers
             model.Group = _db.Group.Find(model.Group.Id);
             model.Subject = _db.Subject.Find(model.Subject.Id);
 
-            var group = _db.Group.Include(x => x.Visits).Include(x => x.Subjects).Where(x => x.Id == model.Group.Id).FirstOrDefault();
+            var group = _db.Group.Include(x => x.GroupVisits).Include(x => x.Subjects).Where(x => x.Id == model.Group.Id).FirstOrDefault();
             var subject = group.Subjects.Where(x => x.Id == model.Subject.Id).ToList();
             if (subject.Count() == 0)
             {
@@ -179,7 +215,7 @@ namespace Eljur.Controllers
             switch (action)
             {
                 case "create": { return GetExcel(model); }
-                case "edit": { return EditVisit(model); }
+                case "edit": { return EditGroupVisit(model); }
             }
             return View("VisitView");
         }
@@ -189,7 +225,7 @@ namespace Eljur.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         public IActionResult GetExcel(ChoosePropertyVisit model)
-        {        
+        {
             return GenerateExcel(model);
         }
         public FileResult GenerateExcel(ChoosePropertyVisit model)
@@ -201,18 +237,19 @@ namespace Eljur.Controllers
             {
                 var group = _db.Group
                     .Include(x => x.Students)
-                    .ThenInclude(x=>x.Visits)
+                    .ThenInclude(x => x.StudentVisits)
+                    .Include(x => x.GroupVisits)
                     .ThenInclude(x => x.Theme)
                     .Include(x => x.Subjects)
-                    .Include(x => x.Visits)
+                    .Include(x => x.GroupVisits)
                     .Where(x => x.Id == model.Group.Id)
                     .FirstOrDefault();
 
-                var students = group.Students.OrderBy(x => x.FIO);
+                var students = group.Students.OrderBy(x => x.FIO).ToList();
                 //посещаемость студентов
-                for (int i = 0; i < students.Count();i++)
+                for (int i = 0; i < students.Count(); i++)
                 {
-                    var visits = group.Students[i].Visits.Where(x => x.Subject.Id == model.Subject.Id).ToList();
+                    var visits = students[i].StudentVisits.Where(x => x.GroupVisit.Subject.Id == model.Subject.Id).ToList();
 
                     WriteStudentsVisits(visits, package, i);
                 }
@@ -221,25 +258,22 @@ namespace Eljur.Controllers
                 var subjectName = package.Workbook.Names[$"SubjectName"];
                 package.Workbook.Worksheets["Лист1"].Cells[subjectName.Address].Value = model.Subject.Name;
 
-                //дата
-                var firstStudent = group.Students.FirstOrDefault();
-
-                var visitsForSubject = firstStudent.Visits.Where(x => x.Subject.Id == model.Subject.Id).ToList();
-
-                for (int i = 0; i < visitsForSubject.Count(); i++)
+                //учёт занятий
+                var groupVisits = group.GroupVisits.Where(x => x.Subject.Id == model.Subject.Id).ToList();
+                for (int i = 0; i < groupVisits.Count(); i++)
                 {
-                    var data = visitsForSubject[i];
+                    var data = groupVisits[i];
                     var date = data.Date.ToString("dd.MM.yyyy");
-                    var datePlace = package.Workbook.Names[$"time{i+1}"]; //left
+                    var datePlace = package.Workbook.Names[$"time{i + 1}"]; //left
                     package.Workbook.Worksheets["Лист1"].Cells[datePlace.Address].Value = date;
 
-                    var datePlace1 = package.Workbook.Names[$"date_{i+1}"]; //right
+                    var datePlace1 = package.Workbook.Names[$"date_{i + 1}"]; //right
                     package.Workbook.Worksheets["Лист1"].Cells[datePlace1.Address].Value = date;
 
-                    var visitType = package.Workbook.Names[$"visitType{i+1}"];
+                    var visitType = package.Workbook.Names[$"visitType{i + 1}"];
                     package.Workbook.Worksheets["Лист1"].Cells[visitType.Address].Value = (TypeSubjectRusEnum)data.TypeSubject;
 
-                    var themeName = package.Workbook.Names[$"themeName{i+1}"];
+                    var themeName = package.Workbook.Names[$"themeName{i + 1}"];
                     package.Workbook.Worksheets["Лист1"].Cells[themeName.Address].Value = data.Theme.Name;
 
                     var hour = package.Workbook.Names[$"hour"];
@@ -247,22 +281,21 @@ namespace Eljur.Controllers
 
                 }
 
-
                 package.SaveAs(stream);
             }
 
             stream.Position = 0;
             return File(stream, "application/xlsx", $"Посещаемость[{model.Group.Name} - {model.Subject.Name}].xlsx");
         }
-        public void WriteStudentsVisits(List<Visit> visits, ExcelPackage package, int index)
+        public void WriteStudentsVisits(List<StudentVisit> visits, ExcelPackage package, int index)
         {
             int validHours = 0;
             int inValidHours = 0;
             var list = new List<string>();
 
-            foreach(var visit in visits)
+            foreach (var visit in visits)
             {
-                switch(visit.TypeVisit)
+                switch (visit.TypeVisit)
                 {
                     case TypeVisitEnum.Absent:
                         {

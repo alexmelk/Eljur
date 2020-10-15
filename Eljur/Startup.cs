@@ -58,7 +58,7 @@ namespace Eljur
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Account}/{action=Login}");
+                    pattern: "{controller=Settings}/{action=Index}");
             });
         }
     }

@@ -12,6 +12,7 @@
 @{int events = Convert.ToInt32(Model.Input.Time / 2);}
 <form asp-controller="Visit" asp-action="AddVisit">
     <input asp-for="@Model.SubjectId" value="@Model.Input.Subject.Id" type="hidden" />
+    <input asp-for="@Model.GroupId" value="@Model.Input.Group.Id" type="hidden" />
     <table class="table table-bordered">
         <thead align="center">
             <tr>
@@ -41,7 +42,7 @@
         </thead>
         <tbody>
             @{ var counter = 0;}
-            @foreach (var student in Model.Input.Group.Students)
+            @foreach (var student in Model.Input.Group.Students.OrderBy(x => x.FIO))
             {
                 <tr>
                     <td>@student.FIO</td>

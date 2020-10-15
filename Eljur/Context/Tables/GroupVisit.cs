@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Eljur.Context.Tables
 {
-    public class Visit
+    public class GroupVisit
     {
         public int Id { get; set; }
 
         public DateTime Date { get; set; }
-        public TypeVisitEnum TypeVisit { get; set; }
         public TypeSubjectEnum TypeSubject { get; set; }
 
-        [System.ComponentModel.DataAnnotations.Required]
+        [Required]
+        public Group Group { get; set; }
+        [Required]
         public Subject Subject { get; set; }
-        [System.ComponentModel.DataAnnotations.Required]
+        [Required]
         public Theme Theme { get; set; }
-        [System.ComponentModel.DataAnnotations.Required]
-        public Student Student { get;set;}
+        [Required]
+        public List<StudentVisit> StudentVisits { get; set; }
 
     }
 }

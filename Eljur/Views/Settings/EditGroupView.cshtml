@@ -47,3 +47,33 @@
         </div>
     </form>
 </div>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список студентов</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid" style="text-align:center">
+    <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>Группа</th>
+            <th>Посещения (часы)</th>
+            <th>Пропуски (часы)</th>
+            <th>Всего занятий (часы)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model.Students.OrderBy(x=>x.FIO))
+        {
+            var present = el.StudentVisits.Where(x => x.TypeVisit == Eljur.Context.Tables.TypeVisitEnum.Present);
+            <tr>
+                <td>@el.FIO</td>
+                <td>@el.Group.Name</td>
+                <td>@(present.Count()*2)</td>
+                <td>@((el.StudentVisits.Count()-present.Count())*2)</td>
+                <td>@(el.StudentVisits.Count()*2)</td>
+            </tr>
+        }
+    </tbody>
+</table>

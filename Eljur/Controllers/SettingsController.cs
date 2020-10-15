@@ -44,7 +44,7 @@ namespace Eljur.Controllers
         {
          var model = _db.Group.Include(a => a.Students)
                 .Include(a => a.Subjects)
-                .Include(a => a.Visits)
+                .Include(a => a.GroupVisits)
                 .ToList();
             return View(model);
         }
@@ -55,7 +55,11 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult EditGroupView(int id)
         {
-            var model = _db.Group.Include(a => a.Subjects).Where(x => x.Id == id).FirstOrDefault();
+            var model = _db.Group
+                .Include(x => x.Subjects)
+                .Include(x=>x.Students)
+                .ThenInclude(x=>x.StudentVisits)
+                .Where(x => x.Id == id).FirstOrDefault();
             return View(model);
         }
         /// <summary>
@@ -65,7 +69,7 @@ namespace Eljur.Controllers
         public IActionResult StudentView()
         {
             var model = _db.Student.Include(a => a.Group)
-                .Include(a => a.Visits)
+                .Include(a => a.StudentVisits)
                 .ToList();
 
             return View(model);
@@ -160,7 +164,7 @@ namespace Eljur.Controllers
 
             var model = _db.Group.Include(a => a.Students)
                 .Include(a => a.Subjects)
-                .Include(a => a.Visits)
+                .Include(a => a.GroupVisits)
                 .ToList();
 
             return RedirectToAction("GroupView", model);
@@ -174,9 +178,9 @@ namespace Eljur.Controllers
         {
             var group = _db.Group
                 .Include(x => x.Students)
-                .ThenInclude(x => x.Visits)
+                .ThenInclude(x => x.StudentVisits)
                 .Include(x => x.Subjects)
-                .Include(x => x.Visits)
+                .Include(x => x.GroupVisits)
                 .Where(x => x.Id == id).FirstOrDefault();
 
             _db.Group.Remove(group);
@@ -184,7 +188,7 @@ namespace Eljur.Controllers
 
              var model = _db.Group.Include(x => x.Students)
                 .Include(x => x.Subjects)
-                .Include(x => x.Visits)
+                .Include(x => x.GroupVisits)
                 .ToList();
 
             return RedirectToAction("GroupView", model);
@@ -207,8 +211,8 @@ namespace Eljur.Controllers
                 _db.SaveChanges();
             }
 
-            var model = _db.Student.Include(a => a.Group)
-                .Include(a => a.Visits)
+            var model = _db.Student.Include(x => x.Group)
+                .Include(x => x.StudentVisits)
                 .ToList();
 
             return RedirectToAction("StudentView", model);
@@ -223,8 +227,8 @@ namespace Eljur.Controllers
 
             _db.SaveChanges();
 
-            var model = _db.Student.Include(a => a.Group)
-                .Include(a => a.Visits)
+            var model = _db.Student.Include(x => x.Group)
+                .Include(x => x.StudentVisits)
                 .ToList();
 
             return RedirectToAction("StudentView", model);
@@ -237,7 +241,7 @@ namespace Eljur.Controllers
         public IActionResult RemoveStudent(int id)
         {
             var student = _db.Student
-                .Include(x => x.Visits)
+                .Include(x => x.StudentVisits)
                 .Include(x => x.Group)
                 .Where(x => x.Id == id)
                 .FirstOrDefault();
@@ -245,8 +249,8 @@ namespace Eljur.Controllers
             _db.Student.Remove(student);
             _db.SaveChanges();
 
-            var model = _db.Student.Include(a => a.Group)
-                .Include(a => a.Visits)
+            var model = _db.Student.Include(x => x.Group)
+                .Include(x => x.StudentVisits)
                 .ToList();
             
             return RedirectToAction("StudentView", model);

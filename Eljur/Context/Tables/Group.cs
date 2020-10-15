@@ -13,6 +13,6 @@ namespace Eljur.Context.Tables
 
         public List<Student> Students { get; set; }
         public List<Subject> Subjects { get; set; }
-        public List<Visit> Visits { get; set; }
+        public List<GroupVisit> GroupVisits { get; set; }
     }
 }

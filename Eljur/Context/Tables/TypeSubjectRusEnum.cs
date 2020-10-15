@@ -7,6 +7,6 @@ namespace Eljur.Context.Tables
 {
     public enum TypeSubjectRusEnum
     {
-        лб, лк, пр
+        лр, л, пз
     }
 }

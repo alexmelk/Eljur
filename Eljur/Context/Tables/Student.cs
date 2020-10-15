@@ -14,7 +14,7 @@ namespace Eljur.Context.Tables
         [System.ComponentModel.DataAnnotations.Required]
         public Group Group { get; set; }
 
-        public List<Visit> Visits { get; set; }
+        public List<StudentVisit> StudentVisits { get; set; }
 
     }
 }

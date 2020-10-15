@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Eljur.Context.Tables
 {
-    public class Theme
+    public class StudentVisit
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
-
         [Required]
-        public Subject Subject { get; set; }
-
-        public List<GroupVisit> Visits { get; set; }
+        public Student Student { get; set; }
+        [Required]
+        public GroupVisit GroupVisit { get; set; }
+        [Required]
+        public TypeVisitEnum TypeVisit { get; set; }
     }
 }
