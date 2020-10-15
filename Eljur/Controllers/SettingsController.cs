@@ -6,9 +6,11 @@ using Eljur.Context.Tables;
 using Eljur.Context;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Eljur.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class SettingsController : Controller
     {
         public dbContext _db;

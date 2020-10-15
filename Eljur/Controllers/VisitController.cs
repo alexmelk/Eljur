@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using Eljur.Context;
 using Eljur.Context.Tables;
 using Eljur.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 
 namespace Eljur.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class VisitController : Controller
     {
         dbContext _db;
@@ -104,10 +106,10 @@ namespace Eljur.Controllers
             }
 
             
-_db.Visit.AddRange(visits);
+            _db.Visit.AddRange(visits);
             _db.SaveChanges();
 
-            return RedirectToAction("Index", "Settings");
+            return View("VisitAddedView");
         }
         /// <summary>
         /// Редактирование посещения
