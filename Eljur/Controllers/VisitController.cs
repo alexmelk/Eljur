@@ -107,6 +107,7 @@ namespace Eljur.Controllers
                         TypeVisit = visitModify.TypeVisit,
                         Student = _db.Student.Find(visitModify.StudentId),
                         GroupVisit = visit,
+                        Subject = _db.Subject.Find(model.SubjectId),
                     };
                     _db.StudentVisit.Add(studentVisit);
 
@@ -238,6 +239,12 @@ namespace Eljur.Controllers
                 var group = _db.Group
                     .Include(x => x.Students)
                     .ThenInclude(x => x.StudentVisits)
+                    .ThenInclude(x => x.GroupVisit)
+                    .ThenInclude(x => x.Subject)
+                    .Include(x => x.Students)
+                    .ThenInclude(x => x.StudentVisits)
+                    .ThenInclude(x => x.GroupVisit)
+                    .ThenInclude(x => x.Group)
                     .Include(x => x.GroupVisits)
                     .ThenInclude(x => x.Theme)
                     .Include(x => x.Subjects)
@@ -249,7 +256,10 @@ namespace Eljur.Controllers
                 //посещаемость студентов
                 for (int i = 0; i < students.Count(); i++)
                 {
-                    var visits = students[i].StudentVisits.Where(x => x.GroupVisit.Subject.Id == model.Subject.Id).ToList();
+                    var visits = students[i].StudentVisits
+                        .Where(x => x.GroupVisit.Subject.Id == model.Subject.Id)
+                        .Where(x=>x.GroupVisit.Group.Id==model.Group.Id)
+                        .ToList();
 
                     WriteStudentsVisits(visits, package, i);
                 }

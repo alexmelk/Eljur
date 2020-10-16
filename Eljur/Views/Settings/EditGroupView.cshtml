@@ -64,7 +64,8 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var el in Model.Students.OrderBy(x=>x.FIO))
+        @if (Model.Students != null)
+        @foreach (var el in Model?.Students.OrderBy(x=>x.FIO))
         {
             var present = el.StudentVisits.Where(x => x.TypeVisit == Eljur.Context.Tables.TypeVisitEnum.Present);
             <tr>

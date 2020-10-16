@@ -60,6 +60,7 @@ namespace Eljur.Controllers
                 .Include(x=>x.Students)
                 .ThenInclude(x=>x.StudentVisits)
                 .Where(x => x.Id == id).FirstOrDefault();
+
             return View(model);
         }
         /// <summary>
@@ -154,7 +155,11 @@ namespace Eljur.Controllers
 
                     _db.SaveChanges();
 
-                    var m = _db.Group.Include(a => a.Subjects).Where(x => x.Id == id).FirstOrDefault();
+                    var m = _db.Group
+                        .Include(x => x.Subjects)
+                        .Include(x=>x.Students)
+                        .ThenInclude(x=>x.StudentVisits)
+                        .Where(x => x.Id == id).FirstOrDefault();
 
                     return View("EditGroupView", m);
                 }
