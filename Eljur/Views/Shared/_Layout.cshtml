@@ -13,7 +13,7 @@
     <!-- JS, Popper.js, and jQuery -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap-4.5.0-dist/js/bootstrap.min.js"></script>
-    <script src="~/lib/bootstrap-4.5.0-dist/js/bootstrap.bundle.min.js"></script>
+    @*<script src="~/lib/bootstrap-4.5.0-dist/js/bootstrap.bundle.min.js"></script>*@
     <script src="~/lib/tables//datatables/datatables.min.js"></script>
     <script src="~/lib/tables/handsontable/languages/ru-RU.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -45,17 +45,26 @@
                     <li class="nav-item">
                         <a class="nav-link" asp-action="Index" asp-controller="Settings">Добавить посещение<span class="sr-only">(current)</span></a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Настройки</a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" asp-action="StudentView" asp-controller="Settings">Студенты<span class="sr-only">(current)</span></a>
-                            <a class="dropdown-item" asp-action="GroupView" asp-controller="Settings">Группы<span class="sr-only">(current)</span></a>
-                            <a class="dropdown-item" asp-action="SubjectView" asp-controller="Settings">Предметы<span class="sr-only">(current)</span></a>
-                            <a class="dropdown-item" asp-action="ThemeView" asp-controller="Settings">Темы<span class="sr-only">(current)</span></a>
-                            <a class="dropdown-item" asp-action="VisitView" asp-controller="Settings">Посещения<span class="sr-only">(current)</span></a>
-                        </div>
-                    </li>
-                </ul>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Настройки</a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" asp-action="StudentView" asp-controller="Settings">Студенты<span class="sr-only">(current)</span></a>
+                                <a class="dropdown-item" asp-action="GroupView" asp-controller="Settings">Группы<span class="sr-only">(current)</span></a>
+                                <a class="dropdown-item" asp-action="SubjectView" asp-controller="Settings">Предметы<span class="sr-only">(current)</span></a>
+                                <a class="dropdown-item" asp-action="ThemeView" asp-controller="Settings">Темы<span class="sr-only">(current)</span></a>
+                                <a class="dropdown-item" asp-action="VisitView" asp-controller="Settings">Посещения<span class="sr-only">(current)</span></a>
+                            </div>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-action="VisitView" asp-controller="Settings">Посещения<span class="sr-only">(current)</span></a>
+                        </li>
+                    }
+                    </ul>
               
                 <span class="navbar-text">
                     <label style="color:white; font-weight:normal;">@User.Identity.Name</label>

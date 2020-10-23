@@ -15,7 +15,7 @@ using OfficeOpenXml;
 
 namespace Eljur.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin, teacher")]
     public class VisitController : Controller
     {
         dbContext _db;

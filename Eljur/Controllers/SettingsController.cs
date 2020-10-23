@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Eljur.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin, teacher")]
     public class SettingsController : Controller
     {
         public dbContext _db;

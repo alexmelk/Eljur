@@ -80,13 +80,13 @@ namespace Eljur.Controllers
         [HttpGet]
         public async Task<IActionResult> Login()
         {
-            //User user = new User { Email = "admin@mail.ru", UserName = "admin@mail.ru", };
-            //// добавляем пользователя
-            //IdentityResult result1 = await _userManager.CreateAsync(user, "adminAdmin1!");
+            //User user = new User { Email = "user@mail.ru", UserName = "user@mail.ru", };
+            ////// добавляем пользователя
+            //IdentityResult result1 = await _userManager.CreateAsync(user, "userUser1!");
 
-            //await _roleManager.CreateAsync(new IdentityRole("admin"));
+            //await _roleManager.CreateAsync(new IdentityRole("teacher"));
 
-            //await _userManager.AddToRoleAsync(user, "admin");
+            //await _userManager.AddToRoleAsync(user, "teacher");
             return View();
         }
 
