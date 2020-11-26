@@ -208,15 +208,16 @@ namespace Eljur.Controllers
 
             var group = _db.Group.Include(x => x.GroupVisits).Include(x => x.Subjects).Where(x => x.Id == model.Group.Id).FirstOrDefault();
             var subject = group.Subjects.Where(x => x.Id == model.Subject.Id).ToList();
-            if (subject.Count() == 0)
+            if ((subject.Count() == 0) && (action != "create-for-group"))
             {
                 return View("NoVisits", model);
             }
 
             switch (action)
             {
-                case "create": { return GetExcel(model); }
+                case "create": { return GetExcel(model, allSubjects: false); }
                 case "edit": { return EditGroupVisit(model); }
+                case "create-for-group": { return GetExcel(model, allSubjects: true); }
             }
             return View("VisitView");
         }
@@ -225,16 +226,18 @@ namespace Eljur.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public IActionResult GetExcel(ChoosePropertyVisit model)
+        public IActionResult GetExcel(ChoosePropertyVisit model, bool allSubjects)
         {
-            return GenerateExcel(model);
+            return GenerateExcel(model, allSubjects);
         }
-        public FileResult GenerateExcel(ChoosePropertyVisit model)
+        public FileResult GenerateExcel(ChoosePropertyVisit model, bool allSubjects)
         {
+            bool firstSubject = true;
+            var page = 1;
             Stream stream = new FileStream(path: ".//file.xlsx", FileMode.Create);
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
+            using (var outputPakage = new ExcelPackage())
             {
                 var group = _db.Group
                     .Include(x => x.Students)
@@ -253,49 +256,65 @@ namespace Eljur.Controllers
                     .FirstOrDefault();
 
                 var students = group.Students.OrderBy(x => x.FIO).ToList();
-                //посещаемость студентов
-                for (int i = 0; i < students.Count(); i++)
-                {
-                    var visits = students[i].StudentVisits
-                        .Where(x => x.GroupVisit.Subject.Id == model.Subject.Id)
-                        .Where(x=>x.GroupVisit.Group.Id==model.Group.Id)
-                        .ToList();
+                var subjects = allSubjects ? group.Subjects : new List<Subject>() { model.Subject };
 
-                    WriteStudentsVisits(visits, package, i);
+                foreach (var subject in subjects.OrderBy(x => x.Name).ToList())
+                {
+                    using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
+                    {
+                        if (firstSubject) { outputPakage.Workbook.Worksheets.Add("Титульник", package.Workbook.Worksheets["Титульник"]); firstSubject = false; }
+
+                        //посещаемость студентов
+                        for (int i = 0; i < students.Count(); i++)
+                        {
+                            var visits = students[i].StudentVisits
+                                .Where(x => x.GroupVisit.Subject.Id == subject.Id)
+                                .Where(x => x.GroupVisit.Group.Id == model.Group.Id)
+                                .ToList();
+
+                            WriteStudentsVisits(visits, package, i);
+                        }
+
+                        //название предмета
+                        var subjectName = package.Workbook.Names[$"SubjectName"];
+                        package.Workbook.Worksheets["Шаблон"].Cells[subjectName.Address].Value = subject.Name;
+
+                        //учёт занятий
+                        var groupVisits = group.GroupVisits.Where(x => x.Subject.Id == subject.Id).ToList();
+                        for (int i = 0; i < groupVisits.Count(); i++)
+                        {
+                            var data = groupVisits[i];
+                            var date = data.Date.ToString("dd.MM.yyyy");
+                            var datePlace = package.Workbook.Names[$"time{i + 1}"]; //left page
+                            package.Workbook.Worksheets["Шаблон"].Cells[datePlace.Address].Value = date;
+
+                            var datePlace1 = package.Workbook.Names[$"date_{i + 1}"]; //right page
+                            package.Workbook.Worksheets["Шаблон"].Cells[datePlace1.Address].Value = date;
+
+                            var visitType = package.Workbook.Names[$"visitType{i + 1}"];
+                            package.Workbook.Worksheets["Шаблон"].Cells[visitType.Address].Value = (TypeSubjectRusEnum)data.TypeSubject;
+
+                            var themeName = package.Workbook.Names[$"themeName{i + 1}"];
+                            package.Workbook.Worksheets["Шаблон"].Cells[themeName.Address].Value = data.Theme.Name;
+
+                        }
+
+                        var pageLeft = package.Workbook.Names["pageLeft"];
+                        package.Workbook.Worksheets["Шаблон"].Cells[pageLeft.Address].Value = page++;
+
+                        var pageRight = package.Workbook.Names["pageRight"];
+                        package.Workbook.Worksheets["Шаблон"].Cells[pageRight.Address].Value = page++;
+                         
+                        outputPakage.Workbook.Worksheets.Add(subject.Name, package.Workbook.Worksheets["Шаблон"]);
+                        
+                    }
                 }
 
-                //название предмета
-                var subjectName = package.Workbook.Names[$"SubjectName"];
-                package.Workbook.Worksheets["Лист1"].Cells[subjectName.Address].Value = model.Subject.Name;
+                outputPakage.SaveAs(stream);
 
-                //учёт занятий
-                var groupVisits = group.GroupVisits.Where(x => x.Subject.Id == model.Subject.Id).ToList();
-                for (int i = 0; i < groupVisits.Count(); i++)
-                {
-                    var data = groupVisits[i];
-                    var date = data.Date.ToString("dd.MM.yyyy");
-                    var datePlace = package.Workbook.Names[$"time{i + 1}"]; //left
-                    package.Workbook.Worksheets["Лист1"].Cells[datePlace.Address].Value = date;
-
-                    var datePlace1 = package.Workbook.Names[$"date_{i + 1}"]; //right
-                    package.Workbook.Worksheets["Лист1"].Cells[datePlace1.Address].Value = date;
-
-                    var visitType = package.Workbook.Names[$"visitType{i + 1}"];
-                    package.Workbook.Worksheets["Лист1"].Cells[visitType.Address].Value = (TypeSubjectRusEnum)data.TypeSubject;
-
-                    var themeName = package.Workbook.Names[$"themeName{i + 1}"];
-                    package.Workbook.Worksheets["Лист1"].Cells[themeName.Address].Value = data.Theme.Name;
-
-                    var hour = package.Workbook.Names[$"hour"];
-                    package.Workbook.Worksheets["Лист1"].Cells[hour.Address].Value = 2;
-
-                }
-
-                package.SaveAs(stream);
+                stream.Position = 0;
+                return File(stream, "application/xlsx", $"Посещаемость[{model.Group.Name}].xlsx");
             }
-
-            stream.Position = 0;
-            return File(stream, "application/xlsx", $"Посещаемость[{model.Group.Name} - {model.Subject.Name}].xlsx");
         }
         public void WriteStudentsVisits(List<StudentVisit> visits, ExcelPackage package, int index)
         {
@@ -335,11 +354,11 @@ namespace Eljur.Controllers
             }
 
             var student = package.Workbook.Names[$"Student{index + 1}"];
-            package.Workbook.Worksheets["Лист1"].Cells[student.Address].Value = visitsMas;
+            package.Workbook.Worksheets["Шаблон"].Cells[student.Address].Value = visitsMas;
             var valid = package.Workbook.Names[$"valid{index + 1}"];
-            package.Workbook.Worksheets["Лист1"].Cells[valid.Address].Value = validHours;
+            package.Workbook.Worksheets["Шаблон"].Cells[valid.Address].Value = validHours;
             var inValid = package.Workbook.Names[$"invalid{index + 1}"];
-            package.Workbook.Worksheets["Лист1"].Cells[inValid.Address].Value = inValidHours;
+            package.Workbook.Worksheets["Шаблон"].Cells[inValid.Address].Value = inValidHours;
 
         }
 

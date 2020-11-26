@@ -23,9 +23,16 @@
         </div>
         <br />
         <div>
-            <button class="btn btn-success" style="width:100%" name="action" value="create">Создать Excel📋</button>
+            <button class="btn btn-success" style="width:100%" name="action" value="create">Создать Excel по предмету📋</button>
         </div>
         <br />
+        @if (User.IsInRole("admin"))
+        {
+        <div>
+            <button class="btn btn-success" style="width:100%" name="action" value="create-for-group">Создать Excel по группе📋</button>
+        </div>
+        <br />
+        }
         <div>
             <button class="btn btn-info" style="width:100%" name="action" value="edit">Список посещений</button>
         </div>

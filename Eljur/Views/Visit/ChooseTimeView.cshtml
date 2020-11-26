@@ -14,14 +14,14 @@
     <input asp-for="@Model.Subject.Id" type="hidden" />
     <div style="margin:0 auto; width:300px;">
         <div class="row">
-                <div class="form-group">
-                    <label lass="text-info">Часы на занятие:</label><br>
-                    <input asp-for="@Model.Time" type="number" min="2" step="2" value="2" class="form-control" />
-                </div>
+            <div class="form-group" style="width:100%">
+                <label lass="text-info">Часы на занятие:</label><br>
+                <input asp-for="@Model.Time" type="number" min="2" step="2" value="2" class="form-control" />
+            </div>
         </div>
         <br />
         <div class="row">
-            <button class="btn btn-success">Далее</button>
+            <button class="btn btn-success" style="width:100%">Далее</button>
         </div>
     </div>
 </form>

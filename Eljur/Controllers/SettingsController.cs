@@ -7,6 +7,7 @@ using Eljur.Context;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Eljur.Models;
 
 namespace Eljur.Controllers
 {
@@ -34,7 +35,7 @@ namespace Eljur.Controllers
         //main view
         public IActionResult VisitView()
         {
-            return View();
+            return View(new ChoosePropertyVisit());
         }
         /// <summary>
         /// Группы
@@ -121,7 +122,7 @@ namespace Eljur.Controllers
         //visit
         public IActionResult AddVisit(int time)
         {
-            return RedirectToAction("VisitView");
+            return RedirectToAction("VisitView", new ChoosePropertyVisit());
         }
 
 

@@ -78,7 +78,7 @@ namespace Eljur.Controllers
             return View(model);
         }
         [HttpGet]
-        public async Task<IActionResult> Login()
+        public IActionResult Login()
         {
             //User user = new User { Email = "user@mail.ru", UserName = "user@mail.ru", };
             ////// добавляем пользователя
@@ -87,7 +87,7 @@ namespace Eljur.Controllers
             //await _roleManager.CreateAsync(new IdentityRole("teacher"));
 
             //await _userManager.AddToRoleAsync(user, "teacher");
-            return View();
+            return View(new LoginViewModel());
         }
 
         public async Task<IActionResult> Logout()

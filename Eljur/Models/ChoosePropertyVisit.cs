@@ -8,8 +8,8 @@ namespace Eljur.Models
 {
     public class ChoosePropertyVisit
     {
-        public Group Group { get; set; }
-        public Subject Subject { get; set; }
+        public Group Group { get; set; } = new Group();
+        public Subject Subject { get; set; } = new Subject();
         public int Time { get; set; }
     }
 }
