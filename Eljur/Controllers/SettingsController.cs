@@ -316,12 +316,12 @@ namespace Eljur.Controllers
         /// <param name="subjectId"></param>
         /// <returns></returns>
         //themes
-        public IActionResult EditTheme(int? id, string name, int subjectId)
+        public IActionResult EditTheme(int? id, string name, int subjectId, TypeSubjectEnum type)
         {
             var find = _db.Theme.Find(id);
             if (find == null)
             {
-                _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId) });
+                _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId), Type = type });
                 _db.SaveChanges();
             }
 
@@ -336,6 +336,7 @@ namespace Eljur.Controllers
 
             savedTheme.Name = theme.Name;
             savedTheme.Subject = _db.Subject.Find(theme.Subject.Id);
+            savedTheme.Type = theme.Type;
 
             _db.SaveChanges();
 
@@ -381,6 +382,17 @@ namespace Eljur.Controllers
 
             var model = _db.Group.Include(a => a.Subjects).Where(x => x.Id == groupId).FirstOrDefault();
             return View("EditGroupView", model);
+        }
+
+        public IActionResult ClearVisits(int id)
+        {
+            var group = _db.Group.Include(x => x.GroupVisits).ThenInclude(x => x.StudentVisits).FirstOrDefault();
+
+            group.GroupVisits.Clear();
+
+            _db.SaveChanges();
+
+            return RedirectToAction("GroupView");
         }
     }
 }

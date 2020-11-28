@@ -65,16 +65,18 @@
     </thead>
     <tbody>
         @if (Model.Students != null)
-        @foreach (var el in Model?.Students.OrderBy(x=>x.FIO))
-        {
-            var present = el.StudentVisits.Where(x => x.TypeVisit == Eljur.Context.Tables.TypeVisitEnum.Present);
-            <tr>
-                <td>@el.FIO</td>
-                <td>@el.Group.Name</td>
-                <td>@(present.Count()*2)</td>
-                <td>@((el.StudentVisits.Count()-present.Count())*2)</td>
-                <td>@(el.StudentVisits.Count()*2)</td>
-            </tr>
-        }
+            @foreach (var el in Model?.Students.OrderBy(x => x.FIO))
+            {
+                var present = el.StudentVisits.Where(x => x.TypeVisit == Eljur.Context.Tables.TypeVisitEnum.Present);
+                <tr>
+                    <td>@el.FIO</td>
+                    <td>@el.Group.Name</td>
+                    <td>@(present.Count()*2)</td>
+                    <td>@((el.StudentVisits.Count()-present.Count())*2)</td>
+                    <td>@(el.StudentVisits.Count()*2)</td>
+                </tr>
+            }
     </tbody>
 </table>
+<br />
+<a class="btn btn-primary" asp-action="ClearVisits" asp-controller="Settings" asp-route-id="@Model.Id" title="Очистить посещения группы">Очистить посещения группы ✏️</a>

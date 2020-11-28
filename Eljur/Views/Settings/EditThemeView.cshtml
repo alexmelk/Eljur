@@ -11,13 +11,17 @@
     <div class="row">
         <input asp-for="@Model.Id" type="hidden" />
 
-        <div class="form-group col-sm-6">
+        <div class="form-group col-sm-4">
             <label asp-for="@Model.Name">Название</label>
             <input type="text" asp-for="@Model.Name" class="form-control" placeholder="" />
         </div>
-        <div class="form-group col-sm-6">
+        <div class="form-group col-sm-4">
             <label asp-for="@Model.Subject">Предмет</label>
             <select class="form-control" asp-for="@Model.Subject.Id" asp-items="@(new SelectList(_db.Subject,"Id","Name"))"></select>
+        </div>
+        <div class="form-group col-sm-4">
+            <label asp-for="@Model.Subject">Тип занятия</label>
+            <select class="form-control" asp-for="@Model.Type" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))"></select>
         </div>
     </div>
     <div class="row">

@@ -87,6 +87,8 @@ namespace Eljur.Controllers
             foreach (var column in model.Output)
             {
                 var theme = _db.Theme.Find(column.ThemeId);
+                theme.IsChoosen = true;
+
                 var typeSubject = column.TypeSubject;
 
                 var visit = new GroupVisit()
@@ -362,5 +364,20 @@ namespace Eljur.Controllers
 
         }
 
+        public string GetThemesList(TypeSubjectEnum typeSubject, int subjectId)
+        {
+            var themes = _db.Theme.Include(x => x.Subject).ToList();
+            var filteredThemes = themes.Where(x => (x.Subject.Id == subjectId) 
+            && (x.Type == typeSubject)
+            && (!x.IsChoosen))
+                .ToList();
+
+            string answer = "";
+            foreach(var theme in filteredThemes)
+            {
+                answer+= $"<option value='{theme.Id}'>{theme.Name}</option>";
+            }
+            return answer;
+        }
     }
 }

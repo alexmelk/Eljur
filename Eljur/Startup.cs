@@ -31,6 +31,7 @@ namespace Eljur
                            options.UseNpgsql(Configuration.GetConnectionString("dbConnectingString")));
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<dbContext>();
             services.AddControllersWithViews();
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

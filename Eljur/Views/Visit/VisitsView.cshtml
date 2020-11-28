@@ -11,7 +11,7 @@
 <br />
 @{int events = Convert.ToInt32(Model.Input.Time / 2);}
 <form asp-controller="Visit" asp-action="AddVisit">
-    <input asp-for="@Model.SubjectId" value="@Model.Input.Subject.Id" type="hidden" />
+    <input asp-for="@Model.SubjectId" value="@Model.Input.Subject.Id" type="hidden"/>
     <input asp-for="@Model.GroupId" value="@Model.Input.Group.Id" type="hidden" />
     <table class="table table-bordered">
         <thead align="center">
@@ -26,17 +26,18 @@
                         <div class="row">
                             <div class="col">
                                 Тип занятия:
-                                <select class="form-control" asp-for="@Model.Output[i].TypeSubject" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))"></select>
+                                <select id='@($"TypeSubject_{i}")' class="form-control" asp-for="@Model.Output[i].TypeSubject" 
+                                        asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))" onchange="GetThemesList(@i)"></select>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col">
                                 Тема:
-                                <select class="form-control" asp-for="@Model.Output[i].ThemeId" asp-items="@(new SelectList(Model.Input.Subject.Themes, "Id", "Name"))"></select>
+                                <select id='@($"Theme_{i}")' class="form-control" asp-for="@Model.Output[i].ThemeId" required></select>
                             </div>
                         </div>
                     </th>
-
+                     
                 }
             </tr>
         </thead>
@@ -50,8 +51,10 @@
                     {
                         <td>
                             <input asp-for="@Model.Output[i].VisitsModify[counter].StudentId" value="@student.Id" type="hidden" />
-
-                            <select class="form-control" asp-for="@Model.Output[i].VisitsModify[counter].TypeVisit" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeVisitEnum))"></select>
+                            
+                            <select class="form-control" asp-for="@Model.Output[i].VisitsModify[counter].TypeVisit" 
+                                    asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeVisitEnum))">
+                            </select>
                         </td>
                     }
                 </tr>
@@ -61,3 +64,24 @@
     </table>
     <button class="btn btn-success">Добавить</button>
 </form>
+<script>
+
+    //начальная инициализация
+    $(document).ready(function () {
+        for (i = 0; i < @events; i++) {
+            GetThemesList(i);
+        }
+    });
+
+    //загружаем при помощи get запроса список доступных тем
+    async function GetThemesList(i) {
+        let typeSubject = $("#TypeSubject_" + i).val();
+        let subjectId = $("#SubjectId").val();
+
+        let response = await fetch("GetThemesList/?typeSubject=" + typeSubject + "&subjectId=" + subjectId );
+        if (response.ok) {
+            $("#Theme_" + i).empty();
+            $("#Theme_" + i).append(await response.text());
+        }
+    }
+</script>
