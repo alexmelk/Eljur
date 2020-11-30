@@ -16,5 +16,6 @@ namespace Eljur.Context.Tables
         public Subject Subject { get; set; }
         public List<GroupVisit> Visits { get; set; }
         public bool IsChoosen { get; set; }
+        public int ChoosenHours { get; set; }
     }
 }

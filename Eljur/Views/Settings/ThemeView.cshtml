@@ -28,7 +28,7 @@
                 <td>@el.Name</td>
                 <td>@el.Subject.Name</td>
                 <td>@Html.DisplayFor(x => @el.Type)</td>
-                <td>@(el.IsChoosen?"Да":"Нет")</td>
+                <td>@(el.ChoosenHours > 0?"Да":"Нет")</td>
                 <td align="center">
                     <a class="btn btn-primary" asp-action="RemoveTheme" asp-route-id="@el.Id" asp-controller="Settings" title="Удалить выбранную запись">❌</a>
                     <a class="btn btn-primary" asp-action="EditThemeView" asp-route-id="@el.Id" asp-controller="Settings" title="Изменить выбранную запись">✏️</a>

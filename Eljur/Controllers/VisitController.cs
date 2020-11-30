@@ -87,7 +87,8 @@ namespace Eljur.Controllers
             foreach (var column in model.Output)
             {
                 var theme = _db.Theme.Find(column.ThemeId);
-                theme.IsChoosen = true;
+
+                theme.ChoosenHours += 2;
 
                 var typeSubject = column.TypeSubject;
 
@@ -368,14 +369,20 @@ namespace Eljur.Controllers
         {
             var themes = _db.Theme.Include(x => x.Subject).ToList();
             var filteredThemes = themes.Where(x => (x.Subject.Id == subjectId) 
-            && (x.Type == typeSubject)
-            && (!x.IsChoosen))
-                .ToList();
+            && (x.Type == typeSubject))
+            .ToList();
 
             string answer = "";
             foreach(var theme in filteredThemes)
             {
-                answer+= $"<option value='{theme.Id}'>{theme.Name}</option>";
+                if(theme.ChoosenHours > 0)
+                {
+                    answer += $"<option style='background:blanchedalmond;' value='{theme.Id}'>{theme.Name} - {theme.ChoosenHours} ч.</option>";
+                }
+                else
+                {
+                    answer += $"<option value='{theme.Id}'>{theme.Name}</option>";
+                }
             }
             return answer;
         }
