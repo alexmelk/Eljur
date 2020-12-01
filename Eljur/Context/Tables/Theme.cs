@@ -15,7 +15,9 @@ namespace Eljur.Context.Tables
         [Required]
         public Subject Subject { get; set; }
         public List<GroupVisit> Visits { get; set; }
-        public bool IsChoosen { get; set; }
-        public int ChoosenHours { get; set; }
+        public int AllowedHours { get; set; }
+
+        [Required]
+        public ThemeGroup ThemeGroup { get; set; }
     }
 }

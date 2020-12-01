@@ -28,7 +28,7 @@
                 <td>@el.Name</td>
                 <td>@el.Subject.Name</td>
                 <td>@Html.DisplayFor(x => @el.Type)</td>
-                <td>@(el.ChoosenHours > 0?"Да":"Нет")</td>
+                <td>@(el.ThemeGroup.UsedHours > 0?"Да":"Нет")</td>
                 <td align="center">
                     <a class="btn btn-primary" asp-action="RemoveTheme" asp-route-id="@el.Id" asp-controller="Settings" title="Удалить выбранную запись">❌</a>
                     <a class="btn btn-primary" asp-action="EditThemeView" asp-route-id="@el.Id" asp-controller="Settings" title="Изменить выбранную запись">✏️</a>
@@ -55,6 +55,10 @@
         <div class="form-group">
             <label>Тип занятия</label>
             <select class="form-control" name="type" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))"></select>
+        </div>
+        <div class="form-group">
+            <label>Выделено часов</label>
+            <input class="form-control" name="hours" type="number" min="2" step="2" placeholder="2" required/>
         </div>
         <div>
             <button class="btn btn-success" style="width:100%;">Добавить</button>

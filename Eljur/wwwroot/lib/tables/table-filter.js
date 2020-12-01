@@ -167,7 +167,7 @@ function createDateTime(column, id) {
         processed = processed.concat(e);
     });
     processed.forEach(function (d, j) {
-        try { var a = (d.match(/(\d+\.\d+\.\d+(\ \d+\:\d+)?)/g)[0]).replace(/[^\d+]/g, ' ').split(' ') } catch (err) { console.log("В datefilter не дата!") }
+        try { var a = (d.match(/(\d+\.\d+\.\d+)/g)[0]).replace(/[^\d+]/g, ' ').split(' ') } catch (err) { console.log("В datefilter не дата!") }
         if (a != null) {
             var date = new Date(a[2], --(a[1]), a[0]);
             if (date > maxDt) maxDt = date;

@@ -1,10 +1,46 @@
-﻿@model List<Eljur.Context.Tables.GroupVisit>
+﻿@model GroupVisitView
 @{
     ViewData["Title"] = "VisitTableView";
 }
 <br />
-<h2 class="text-muted text-center">Посещения группы @Model?.FirstOrDefault()?.Group.Name</h2>
+<h2 class="text-muted text-center">Посещения группы @Model?.Visits.FirstOrDefault()?.Group.Name</h2>
 <br />
+<form asp-action="VisitFilter" asp-controller="Visit" method="post" style="background: darkcyan;padding: 30px;border-radius: 3px;">
+    <input hidden asp-for="@Model.GroupId" />
+    <input hidden asp-for="@Model.SubjectId" />
+    <h4 style="color: white;
+        text-align: center;">Фильтр</h4>
+    <hr style="background: yellowgreen;"/>
+    <div class="filter">
+        <div class="row">
+            <div class="col-4">
+                <div class="form-group">
+                    <label style="color:white">От</label>
+                    <input asp-for="@Model.Filter.From" class="form-control" type="date" />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="form-group">
+                    <label style="color:white">До</label>
+                    <input asp-for="@Model.Filter.Before" class="form-control" type="date" />
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="form-group">
+                    <label style="color:white">Фамилия</label>
+                    <input asp-for="@Model.Filter.LastName" class="form-control" type="text" placeholder="Иванов" />
+                </div>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-info" style="width:100%" name="action" value="submit">Применить</button>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-info" style="width:100%" name="action" value="reset">Сброс</button>
+            </div>
+        </div>
+    </div>
+</form>
+
 <br />
 <br />
 <table class="table table-bordered" id="tableid" style="text-align:center">
@@ -16,14 +52,14 @@
             <th>Тема</th>
             <th>Тип посещения</th>
             <th>Вид занятия</th>
-            @if(User.IsInRole("admin"))
+            @if (User.IsInRole("admin"))
             {
-            <th>Действие</th>
+                <th>Действие</th>
             }
         </tr>
     </thead>
     <tbody>
-        @foreach (var group in Model)
+        @foreach (var group in Model.Visits)
         {
             foreach (var studentVisit in group.StudentVisits)
             {
@@ -34,13 +70,13 @@
                     <td>@group.Theme.Name</td>
                     <td>@Html.DisplayFor(x => studentVisit.TypeVisit)</td>
                     <td>@Html.DisplayFor(x => group.TypeSubject)</td>
-                    @if(User.IsInRole("admin"))
+                    @if (User.IsInRole("admin"))
                     {
-                    <td align="center">
-                        <a class="btn btn-primary" asp-action="RemoveStudentVisit" asp-controller="Visit" asp-route-id="@studentVisit.Id" 
-                           asp-route-groupId="@studentVisit.Student.Group.Id" asp-route-subjectId="@group.Subject.Id" title="Удалить выбранную запись">❌</a>
-                        <a class="btn btn-primary" asp-action="EditStudentVisitView" asp-controller="Visit" asp-route-id="@studentVisit.Id"  title="Изменить выбранную запись">✏️</a>
-                    </td>
+                        <td align="center">
+                            <a class="btn btn-primary" asp-action="RemoveStudentVisit" asp-controller="Visit" asp-route-id="@studentVisit.Id"
+                               asp-route-groupId="@studentVisit.Student.Group.Id" asp-route-subjectId="@group.Subject.Id" title="Удалить выбранную запись">❌</a>
+                            <a class="btn btn-primary" asp-action="EditStudentVisitView" asp-controller="Visit" asp-route-id="@studentVisit.Id" title="Изменить выбранную запись">✏️</a>
+                        </td>
                     }
                 </tr>
             }

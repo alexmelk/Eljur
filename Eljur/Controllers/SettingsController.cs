@@ -101,7 +101,11 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult ThemeView()
         {
-            var model = _db.Theme.Include(x => x.Subject).ToList();
+            var model = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x => x.ThemeGroup)
+                .ToList();
+
             return View(model);
         }
         /// <summary>
@@ -111,7 +115,12 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult EditThemeView(int id)
         {
-            var model = _db.Theme.Include(x => x.Subject).Where(x => x.Id == id).FirstOrDefault();
+            var model = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x=>x.ThemeGroup)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
+
             return View(model);
         }     
         /// <summary>
@@ -316,16 +325,19 @@ namespace Eljur.Controllers
         /// <param name="subjectId"></param>
         /// <returns></returns>
         //themes
-        public IActionResult EditTheme(int? id, string name, int subjectId, TypeSubjectEnum type)
+        public IActionResult EditTheme(int? id, string name, int subjectId, int hours, TypeSubjectEnum type)
         {
             var find = _db.Theme.Find(id);
             if (find == null)
             {
-                _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId), Type = type });
+                _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId), Type = type, AllowedHours = hours, ThemeGroup = new ThemeGroup() });
                 _db.SaveChanges();
             }
 
-            var model = _db.Theme.Include(a => a.Subject).ToList();
+            var model = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x => x.ThemeGroup)
+                .ToList();
 
             return RedirectToAction("ThemeView", model);
         }
@@ -337,10 +349,14 @@ namespace Eljur.Controllers
             savedTheme.Name = theme.Name;
             savedTheme.Subject = _db.Subject.Find(theme.Subject.Id);
             savedTheme.Type = theme.Type;
+            savedTheme.AllowedHours = theme.AllowedHours;
 
             _db.SaveChanges();
 
-            var model = _db.Theme.Include(a => a.Subject).ToList();
+            var model = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x => x.ThemeGroup)
+                .ToList();
 
             return RedirectToAction("ThemeView", model);
         }
@@ -362,7 +378,10 @@ namespace Eljur.Controllers
             _db.Theme.Remove(theme);
             _db.SaveChanges();
 
-            var model = _db.Theme.Include(a => a.Subject).ToList();
+            var model = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x => x.ThemeGroup)
+                .ToList();
 
             return RedirectToAction("ThemeView", model);
         }

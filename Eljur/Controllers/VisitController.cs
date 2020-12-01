@@ -86,9 +86,9 @@ namespace Eljur.Controllers
             var date = model.Date;
             foreach (var column in model.Output)
             {
-                var theme = _db.Theme.Find(column.ThemeId);
+                var theme = _db.Theme.Include(x=>x.ThemeGroup).Where(x=>x.Id==column.ThemeId).FirstOrDefault();
 
-                theme.ChoosenHours += 2;
+                theme.ThemeGroup.UsedHours += 2;
 
                 var typeSubject = column.TypeSubject;
 
@@ -141,7 +141,10 @@ namespace Eljur.Controllers
                 .Include(x => x.Theme)
                 .Where(x => ((x.Subject.Id == model.Subject.Id) && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.Group.Id))).ToList();
 
-            return View("VisitTableView", visits);
+            var output = new GroupVisitView() { GroupId = model.Group.Id, SubjectId = model.Subject.Id, Visits = visits,
+                Filter = new Filter() { From = visits.Min(x => x.Date), Before = visits.Max(x => x.Date) } };
+
+            return View("VisitTableView", output);
         }
         public IActionResult EditStudentVisitView(int id)
         {
@@ -173,7 +176,12 @@ namespace Eljur.Controllers
                         && (x.StudentVisits.FirstOrDefault().Student.Group.Id == groupId)))
                 .ToList();
 
-            return View("VisitTableView", visits);
+            var output = new GroupVisitView() { GroupId = groupId,
+                SubjectId = subjectId,  Visits = visits,
+                Filter = new Filter() { From = visits.Min(x => x.Date), Before = visits.Max(x => x.Date) } 
+            };
+
+            return View("VisitTableView", output);
         }
         /// <summary>
         /// Удалить посещение
@@ -196,7 +204,16 @@ namespace Eljur.Controllers
                              && (x.StudentVisits.FirstOrDefault().Student.Group.Id == groupId)))
                              .ToList();
 
-            return View("VisitTableView", visits);
+            var output = new GroupVisitView()
+            {
+                GroupId = groupId,
+                SubjectId = subjectId,
+                Visits = visits,
+                Filter = new Filter() { From = visits.Min(x => x.Date), Before = visits.Max(x => x.Date) }
+            };
+
+            return View("VisitTableView", output);
+
         }
         /// <summary>
         /// Отображаем настройку "Посещения"
@@ -367,7 +384,11 @@ namespace Eljur.Controllers
 
         public string GetThemesList(TypeSubjectEnum typeSubject, int subjectId)
         {
-            var themes = _db.Theme.Include(x => x.Subject).ToList();
+            var themes = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x=>x.ThemeGroup)
+                .ToList();
+
             var filteredThemes = themes.Where(x => (x.Subject.Id == subjectId) 
             && (x.Type == typeSubject))
             .ToList();
@@ -375,16 +396,57 @@ namespace Eljur.Controllers
             string answer = "";
             foreach(var theme in filteredThemes)
             {
-                if(theme.ChoosenHours > 0)
-                {
-                    answer += $"<option style='background:blanchedalmond;' value='{theme.Id}'>{theme.Name} - {theme.ChoosenHours} ч.</option>";
-                }
-                else
-                {
-                    answer += $"<option value='{theme.Id}'>{theme.Name}</option>";
-                }
+                bool disabled = theme.AllowedHours == theme.ThemeGroup.UsedHours;
+
+                answer += $"<option {(disabled ? "disabled" : "")} " +
+                          $"value='{(disabled ? 0 : theme.Id)}'>{theme.Name} - ({theme.ThemeGroup.UsedHours} из {theme.AllowedHours}) ч.</option>";
+                
             }
             return answer;
+        }
+
+        [HttpPost]
+        public IActionResult VisitFilter(GroupVisitView model, string action)
+        {
+            var visits = _db.GroupVisit
+                            .Include(x => x.StudentVisits)
+                            .ThenInclude(x => x.Student)
+                            .Include(x => x.Subject)
+                            .Include(x => x.Group)
+                            .Include(x => x.Theme)
+                            .Where(x => ((x.Subject.Id == model.SubjectId)
+                             && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.GroupId)))
+                            .ToList();
+
+            if (action == "reset")
+            {
+                model.Filter.LastName = default;
+                model.Filter.From = visits.Min(x => x.Date);
+                model.Filter.Before = visits.Max(x => x.Date);
+                model.Visits = visits;
+
+                return View("VisitTableView", model);
+            }
+            else
+            {
+                visits = visits.Where(x => (x.Date >= model.Filter.From) && (x.Date <= model.Filter.Before)).ToList();
+
+                if (model.Filter.LastName != default)
+                {
+                    visits = visits.Select(x => new GroupVisit() { Date = x.Date,
+                        Group = x.Group,
+                        Id = x.Id,
+                        Subject = x.Subject,
+                        Theme = x.Theme,
+                        TypeSubject = x.TypeSubject,
+                        StudentVisits = x.StudentVisits.Where(y => y.Student.FIO.ToLower().Contains(model.Filter.LastName.ToLower())).ToList() }).ToList();
+                }
+
+            }
+            var output = new GroupVisitView() { GroupId = model.GroupId, SubjectId = model.SubjectId,
+                Visits = visits, Filter =  model.Filter};
+
+            return View("VisitTableView", output);
         }
     }
 }
