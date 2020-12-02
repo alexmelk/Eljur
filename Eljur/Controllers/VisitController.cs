@@ -86,7 +86,7 @@ namespace Eljur.Controllers
             var date = model.Date;
             foreach (var column in model.Output)
             {
-                var theme = _db.Theme.Include(x=>x.ThemeGroup).Where(x=>x.Id==column.ThemeId).FirstOrDefault();
+                var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == column.ThemeId).FirstOrDefault();
 
                 theme.ThemeGroup.UsedHours += 2;
 
@@ -121,8 +121,8 @@ namespace Eljur.Controllers
             }
 
             _db.SaveChanges();
-
             return View("VisitAddedView");
+
         }
         /// <summary>
         /// Редактирование посещения
@@ -393,10 +393,10 @@ namespace Eljur.Controllers
             && (x.Type == typeSubject))
             .ToList();
 
-            string answer = "";
-            foreach(var theme in filteredThemes)
+            string answer = $"<option disabled selected value=''>Не выбрано</option>" ;
+            foreach (var theme in filteredThemes)
             {
-                bool disabled = theme.AllowedHours == theme.ThemeGroup.UsedHours;
+                bool disabled = theme.AllowedHours <= theme.ThemeGroup.UsedHours;
 
                 answer += $"<option {(disabled ? "disabled" : "")} " +
                           $"value='{(disabled ? 0 : theme.Id)}'>{theme.Name} - ({theme.ThemeGroup.UsedHours} из {theme.AllowedHours}) ч.</option>";
