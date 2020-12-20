@@ -50,27 +50,15 @@ namespace Eljur.Controllers
         {
             return View("ChooseSubjectView", model);
         }
-        public IActionResult ChooseSubject(ChoosePropertyVisit model)
-        {
-            return View("ChooseTimeView", model);
-        }
-        public IActionResult ChooseTime(ChoosePropertyVisit input)
+        public IActionResult ChooseSubject(ChoosePropertyVisit input)
         {
             input.Group = _db.Group.Include(x => x.Students).Where(x => x.Id == input.Group.Id).FirstOrDefault();
             input.Subject = _db.Subject.Include(x => x.Themes).Where(x => x.Id == input.Subject.Id).FirstOrDefault();
 
-            var tableColumns = Convert.ToInt32(input.Time / 2);
-            var output = new List<VisitGroupForColumnModel>() { };
-            for (int i = 0; i < tableColumns; i++)
-            {
-                var visits = new List<VisitModify>();
-                for (int j = 0; j < input.Group.Students.Count(); j++) visits.Add(new VisitModify());
+            var visits = new List<VisitModify>();
+            for (int j = 0; j < input.Group.Students.Count(); j++) visits.Add(new VisitModify());
 
-                output.Add(new VisitGroupForColumnModel()
-                {
-                    VisitsModify = visits
-                });
-            }
+            var output = new VisitGroupForColumnModel() { VisitsModify = visits };
 
             var model = new VisitViewModel() { Input = input, Output = output, Date = DateTime.Now };
 
@@ -83,40 +71,46 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult AddVisit(VisitViewModel model)
         {
+            double hoursPerVisit = default;
             var date = model.Date;
-            foreach (var column in model.Output)
+
+            var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == model.Output.ThemeId).FirstOrDefault();
+
+            if (theme.AllowedHours == (theme.ThemeGroup.UsedHours + 1))
             {
-                var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == column.ThemeId).FirstOrDefault();
-
+                theme.ThemeGroup.UsedHours += 1;
+                hoursPerVisit = 1;
+            }
+            else
+            {
                 theme.ThemeGroup.UsedHours += 2;
+                hoursPerVisit = 2;
+            }
 
-                var typeSubject = column.TypeSubject;
+            var typeSubject = model.Output.TypeSubject;
 
-                var visit = new GroupVisit()
+            var visit = new GroupVisit()
+            {
+                Date = date,
+                TypeSubject = typeSubject,
+                Theme = theme,
+                Subject = _db.Subject.Find(model.SubjectId),
+                Group = _db.Group.Find(model.GroupId),
+                HoursPerVisit = hoursPerVisit,
+            };
+            _db.GroupVisit.Add(visit);
+
+
+            foreach (var visitModify in model.Output.VisitsModify)
+            {
+                var studentVisit = new StudentVisit()
                 {
-                    Date = date,
-                    TypeSubject = typeSubject,
-                    Theme = theme,
+                    TypeVisit = visitModify.TypeVisit,
+                    Student = _db.Student.Find(visitModify.StudentId),
+                    GroupVisit = visit,
                     Subject = _db.Subject.Find(model.SubjectId),
-                    Group = _db.Group.Find(model.GroupId),
                 };
-                _db.GroupVisit.Add(visit);
-
-
-                foreach (var visitModify in column.VisitsModify)
-                {
-                    var studentVisit = new StudentVisit()
-                    {
-                        TypeVisit = visitModify.TypeVisit,
-                        Student = _db.Student.Find(visitModify.StudentId),
-                        GroupVisit = visit,
-                        Subject = _db.Subject.Find(model.SubjectId),
-                    };
-                    _db.StudentVisit.Add(studentVisit);
-
-                }
-
-                _db.SaveChanges();
+                _db.StudentVisit.Add(studentVisit);
 
             }
 
@@ -317,6 +311,8 @@ namespace Eljur.Controllers
                             var themeName = package.Workbook.Names[$"themeName{i + 1}"];
                             package.Workbook.Worksheets["Шаблон"].Cells[themeName.Address].Value = data.Theme.Name;
 
+                            var hoursPerVisit = package.Workbook.Names[$"hoursPerVisit{i + 1}"];
+                            package.Workbook.Worksheets["Шаблон"].Cells[hoursPerVisit.Address].Value = data.HoursPerVisit;
                         }
 
                         var pageLeft = package.Workbook.Names["pageLeft"];
@@ -326,7 +322,6 @@ namespace Eljur.Controllers
                         package.Workbook.Worksheets["Шаблон"].Cells[pageRight.Address].Value = page++;
                          
                         outputPakage.Workbook.Worksheets.Add(subject.Name, package.Workbook.Worksheets["Шаблон"]);
-                        
                     }
                 }
 
@@ -348,13 +343,13 @@ namespace Eljur.Controllers
                 {
                     case TypeVisitEnum.Absent:
                         {
-                            list.Add("н");
+                            list.Add("НБ");
                             inValidHours += 2;
                             break;
                         }
                     case TypeVisitEnum.ValidAbsent:
                         {
-                            list.Add("н");
+                            list.Add("Б");
                             validHours += 2;
                             break;
                         }

@@ -4,11 +4,13 @@ namespace Eljur.Context.Tables
 {
     public enum TypeSubjectEnum
     {
-        [Display(Name = "Лр")]
+        [Display(Name = "ЛР")]
         lb,
         [Display(Name = "Л")]
         lk,
-        [Display(Name = "Пз")]
-        pr
+        [Display(Name = "ПЗ")]
+        pr,
+        [Display(Name = "КСР")]
+        ksr
     }
 }

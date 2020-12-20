@@ -7,8 +7,6 @@
 <br />
 <h6 class="text-muted text-center">Группа: <b>@Model.Input.Group.Name</b>. Предмет: <b>@Model.Input.Subject.Name</b>.</h6>
 <br />
-<h6 class="text-muted text-center">Доступно <b>@Model.Input.Time</b> час(а/ов) для добавления</h6>
-<br />
 @{int events = Convert.ToInt32(Model.Input.Time / 2);}
 <form asp-controller="Visit" asp-action="AddVisit">
     <input asp-for="@Model.SubjectId" value="@Model.Input.Subject.Id" type="hidden" />
@@ -21,25 +19,23 @@
                 <th colspan="@events">Дата:   <input asp-for="@Model.Date" type="date" placeholder="Дата" /> </th>
             </tr>
             <tr>
-                @for (int i = 0; i < events; i++)
-                {
                     <th>
                         <div class="row">
                             <div class="col">
                                 Тип занятия:
-                                <select id='@($"TypeSubject_{i}")' class="form-control" asp-for="@Model.Output[i].TypeSubject"
-                                        asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))" onchange="GetThemesList(@i)"></select>
+                                <select id='@($"TypeSubject_1")' class="form-control" asp-for="@Model.Output.TypeSubject"
+                                        asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))" onchange="GetThemesList(1)"></select>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col">
                                 Тема:
-                                <select id='@($"Theme_{i}")' class="form-control" asp-for="@Model.Output[i].ThemeId" required></select>
+                                <select id='@($"Theme_1")' class="form-control" asp-for="@Model.Output.ThemeId" required>
+                                    <option disabled selected value=''>Не выбрано</option>
+                                </select>
                             </div>
                         </div>
                     </th>
-
-                }
             </tr>
         </thead>
         <tbody>
@@ -48,16 +44,13 @@
             {
                 <tr>
                     <td>@student.FIO</td>
-                    @for (int i = 0; i < events; i++)
-                    {
                         <td>
-                            <input asp-for="@Model.Output[i].VisitsModify[counter].StudentId" value="@student.Id" type="hidden" />
+                            <input asp-for="@Model.Output.VisitsModify[counter].StudentId" value="@student.Id" type="hidden" />
 
-                            <select class="form-control" asp-for="@Model.Output[i].VisitsModify[counter].TypeVisit"
+                            <select class="form-control" asp-for="@Model.Output.VisitsModify[counter].TypeVisit"
                                     asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeVisitEnum))">
                             </select>
                         </td>
-                    }
                 </tr>
                 counter++;
             }

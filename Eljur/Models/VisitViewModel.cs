@@ -13,6 +13,6 @@ namespace Eljur.Models
         public int GroupId { get; set; }
 
         public ChoosePropertyVisit Input { get; set; }
-        public List<VisitGroupForColumnModel> Output { get; set; }
+        public VisitGroupForColumnModel Output { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace Eljur.Context.Tables
 
         public DateTime Date { get; set; }
         public TypeSubjectEnum TypeSubject { get; set; }
+        public double HoursPerVisit { get; set; }
 
         [Required]
         public Group Group { get; set; }
