@@ -247,7 +247,7 @@ namespace Eljur.Controllers
         public FileResult GenerateExcel(ChoosePropertyVisit model, bool allSubjects)
         {
             bool firstSubject = true;
-            var page = 1;
+            var page = 8;
             Stream stream = new FileStream(path: ".//file.xlsx", FileMode.Create);
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -276,7 +276,7 @@ namespace Eljur.Controllers
                 {
                     using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
                     {
-                        if (firstSubject) { outputPakage.Workbook.Worksheets.Add("Титульник", package.Workbook.Worksheets["Титульник"]); firstSubject = false; }
+                        if (firstSubject) { outputPakage.Workbook.Worksheets.Add("Начало", package.Workbook.Worksheets["Начало"]); firstSubject = false; }
 
                         //посещаемость студентов
                         for (int i = 0; i < students.Count(); i++)
@@ -291,7 +291,7 @@ namespace Eljur.Controllers
 
                         //название предмета
                         var subjectName = package.Workbook.Names[$"SubjectName"];
-                        package.Workbook.Worksheets["Шаблон"].Cells[subjectName.Address].Value = subject.Name;
+                        package.Workbook.Worksheets["Посещаемость"].Cells[subjectName.Address].Value = subject.Name;
 
                         //учёт занятий
                         var groupVisits = group.GroupVisits.Where(x => x.Subject.Id == subject.Id).ToList();
@@ -300,35 +300,39 @@ namespace Eljur.Controllers
                             var data = groupVisits[i];
                             var date = data.Date.ToString("dd.MM.yyyy");
                             var datePlace = package.Workbook.Names[$"time{i + 1}"]; //left page
-                            package.Workbook.Worksheets["Шаблон"].Cells[datePlace.Address].Value = date;
+                            package.Workbook.Worksheets["Посещаемость"].Cells[datePlace.Address].Value = date;
 
                             var datePlace1 = package.Workbook.Names[$"date_{i + 1}"]; //right page
-                            package.Workbook.Worksheets["Шаблон"].Cells[datePlace1.Address].Value = date;
+                            package.Workbook.Worksheets["Посещаемость"].Cells[datePlace1.Address].Value = date;
 
                             var visitType = package.Workbook.Names[$"visitType{i + 1}"];
-                            package.Workbook.Worksheets["Шаблон"].Cells[visitType.Address].Value = (TypeSubjectRusEnum)data.TypeSubject;
+                            package.Workbook.Worksheets["Посещаемость"].Cells[visitType.Address].Value = (TypeSubjectRusEnum)data.TypeSubject;
 
                             var themeName = package.Workbook.Names[$"themeName{i + 1}"];
-                            package.Workbook.Worksheets["Шаблон"].Cells[themeName.Address].Value = data.Theme.Name;
+                            package.Workbook.Worksheets["Посещаемость"].Cells[themeName.Address].Value = data.Theme.Name;
 
                             var hoursPerVisit = package.Workbook.Names[$"hoursPerVisit{i + 1}"];
-                            package.Workbook.Worksheets["Шаблон"].Cells[hoursPerVisit.Address].Value = data.HoursPerVisit;
+                            package.Workbook.Worksheets["Посещаемость"].Cells[hoursPerVisit.Address].Value = data.HoursPerVisit;
                         }
 
                         var pageLeft = package.Workbook.Names["pageLeft"];
-                        package.Workbook.Worksheets["Шаблон"].Cells[pageLeft.Address].Value = page++;
+                        package.Workbook.Worksheets["Посещаемость"].Cells[pageLeft.Address].Value = page++;
 
                         var pageRight = package.Workbook.Names["pageRight"];
-                        package.Workbook.Worksheets["Шаблон"].Cells[pageRight.Address].Value = page++;
+                        package.Workbook.Worksheets["Посещаемость"].Cells[pageRight.Address].Value = page++;
                          
-                        outputPakage.Workbook.Worksheets.Add(subject.Name, package.Workbook.Worksheets["Шаблон"]);
+                        outputPakage.Workbook.Worksheets.Add(subject.Name, package.Workbook.Worksheets["Посещаемость"]);
                     }
                 }
 
+                using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
+                {
+                    outputPakage.Workbook.Worksheets.Add("Конец", package.Workbook.Worksheets["Конец"]);
+                }
                 outputPakage.SaveAs(stream);
 
                 stream.Position = 0;
-                return File(stream, "application/xlsx", $"Посещаемость[{model.Group.Name}].xlsx");
+                return File(stream, "application/xlsx", $"Журнал[{model.Group.Name}].xlsx");
             }
         }
         public void WriteStudentsVisits(List<StudentVisit> visits, ExcelPackage package, int index)
@@ -369,11 +373,11 @@ namespace Eljur.Controllers
             }
 
             var student = package.Workbook.Names[$"Student{index + 1}"];
-            package.Workbook.Worksheets["Шаблон"].Cells[student.Address].Value = visitsMas;
+            package.Workbook.Worksheets["Посещаемость"].Cells[student.Address].Value = visitsMas;
             var valid = package.Workbook.Names[$"valid{index + 1}"];
-            package.Workbook.Worksheets["Шаблон"].Cells[valid.Address].Value = validHours;
+            package.Workbook.Worksheets["Посещаемость"].Cells[valid.Address].Value = validHours;
             var inValid = package.Workbook.Names[$"invalid{index + 1}"];
-            package.Workbook.Worksheets["Шаблон"].Cells[inValid.Address].Value = inValidHours;
+            package.Workbook.Worksheets["Посещаемость"].Cells[inValid.Address].Value = inValidHours;
 
         }
 
