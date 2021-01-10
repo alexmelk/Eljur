@@ -8,42 +8,67 @@
 <h6 class="text-muted text-center">Группа: <b>@Model.Input.Group.Name</b>. Предмет: <b>@Model.Input.Subject.Name</b>.</h6>
 <br />
 @{int events = Convert.ToInt32(Model.Input.Time / 2);}
-<form asp-controller="Visit" asp-action="AddVisit">
-    <input asp-for="@Model.SubjectId" value="@Model.Input.Subject.Id" type="hidden" />
-    <input asp-for="@Model.GroupId" value="@Model.Input.Group.Id" type="hidden" />
-    <input asp-for="@Model.Input.Time" type="hidden" />
-    <table class="table table-bordered">
-        <thead align="center">
-            <tr>
-                <th rowspan="2">Студент</th>
-                <th colspan="@events">Дата:   <input asp-for="@Model.Date" type="date" placeholder="Дата" /> </th>
-            </tr>
-            <tr>
+
+@*Vue - элемент*@
+<div id="app">
+    <form asp-controller="Visit" asp-action="AddVisit">
+        <input asp-for="@Model.SubjectId" value="@Model.Input.Subject.Id" type="hidden" />
+        <input asp-for="@Model.GroupId" value="@Model.Input.Group.Id" type="hidden" />
+        <input asp-for="@Model.Input.Time" type="hidden" />
+        <table class="table table-bordered">
+            <thead align="center">
+                <tr>
+                    <th rowspan="2">Студент</th>
+                    <th colspan="@events">Дата:   <input asp-for="@Model.Date" type="date" placeholder="Дата" /> </th>
+                </tr>
+                <tr>
                     <th>
                         <div class="row">
                             <div class="col">
                                 Тип занятия:
                                 <select id='@($"TypeSubject_1")' class="form-control" asp-for="@Model.Output.TypeSubject"
-                                        asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))" onchange="GetThemesList(1)"></select>
+                                        asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))" onchange="GetThemesList(1)" v-on:change="{{reset()}}"></select>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col">
                                 Тема:
-                                <select id='@($"Theme_1")' class="form-control" asp-for="@Model.Output.ThemeId" required>
+                                <select id='@($"Theme_1")' class="form-control" asp-for="@Model.Output.ThemeId" required v-on:change="{{select(themeId, true)}}" v-model="themeId">
                                     <option disabled selected value=''>Не выбрано</option>
                                 </select>
                             </div>
                         </div>
-                    </th>
-            </tr>
-        </thead>
-        <tbody>
-            @{ var counter = 0;}
-            @foreach (var student in Model.Input.Group.Students.OrderBy(x => x.FIO))
-            {
-                <tr>
-                    <td>@student.FIO</td>
+
+                        <div v-if="visibleAdditional" id="additional-theme">
+
+                            <div class="d-inline">
+                                <br />
+                                <label>Список доп. тем (осталось {{parseFloat(timeInVisit-reservedTime).toFixed(1)}}ч. из {{timeInVisit}}ч.)</label>
+                                <a type="button" data-toggle="modal" data-target="#modal" v-on:click="{{calculateModal()}}" v-if="isReady">🔽</a>
+                            </div>
+
+                            <div v-for="theme in selectedThemes">
+                                <hr />
+                                <div class="row">
+                                    <div class="col">
+                                        <h6>Тема: {{theme.name}}</h6>
+                                        <h6>Использовано ч.: {{theme.time}}</h6>
+                                        </div>
+                                        <div class="col">
+                                            @*                                        <button type="button" class="btn btn-primary" title="Изменить выбранную запись">✏️</button>*@
+                                            <button type="button" class="btn btn-primary" title="Удалить выбранную запись" v-on:click="{{removeTheme(theme)}}">❌</button>
+                                        </div>
+                                    </div>
+                                <hr />
+                            </div>
+                        </div>
+
+            <tbody>
+                @{ var counter = 0;}
+                @foreach (var student in Model.Input.Group.Students.OrderBy(x => x.FIO))
+                {
+                    <tr>
+                        <td>@student.FIO</td>
                         <td>
                             <input asp-for="@Model.Output.VisitsModify[counter].StudentId" value="@student.Id" type="hidden" />
 
@@ -51,21 +76,151 @@
                                     asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeVisitEnum))">
                             </select>
                         </td>
-                </tr>
-                counter++;
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-success">Добавить</button>
-</form>
+                    </tr>
+                    counter++;
+                }
+            </tbody>
+        </table>
+        <button v-if="timeInVisit-reservedTime==0" class="btn btn-success">Добавить</button>
+    </form>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Добавить тему</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Тип занятия:
+                    <select id='@($"TypeSubject_Modal")' class="form-control"
+                            asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.TypeSubjectEnum))" v-on:change="{{calculateModal()}}"></select>
+                    Тема:
+                    <select class="form-control" id="modalThemes" v-model="modalThemeId">
+                        <option disabled selected value=''>Не выбрано</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" required v-on:click="{{select(modalThemeId, false)}}" data-dismiss="modal">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 <script>
 
     //начальная инициализация
     $(document).ready(function () {
-        for (i = 0; i < @events; i++) {
-            GetThemesList(i);
-        }
-    });
+        GetThemesList(1);
+
+        //максимум за раз можем списать 2 часа
+        var app = new Vue({
+
+            el: '#app',
+            data: {
+                timeInVisit:2,
+                reservedTime: 0.0,
+                themeId: "",
+                modalThemeId:"",
+                subjectId: "",
+                groupId:"",
+                selectedThemes: [],
+                visibleModal: false,
+            },
+            computed: {
+                visibleAdditional: function () {
+                    return (this.reservedTime == 0) ? false : true;
+                },
+                isReady: function () {
+                    return this.reservedTime == this.timeInVisit ? false : true;
+                }
+            },
+            methods: {
+                select: function (id, isFirstSelect) {
+                    if (isFirstSelect) {
+                        this.reset();
+                        console.log(id);
+                        let allowedTime = parseFloat(app.timeInVisit - app.reservedTime).toFixed(1).toString().replace(".", ",");
+                        fetch("\SaveSelectedThemeToSession?themeId=" + id + "&allowedTime=" + allowedTime+"&isFirst=true")
+                            .then(function (response) {
+                                return response.text();
+                            })
+                            .then(function (text) {
+                                let reservedTime = Number(parseFloat(app.reservedTime + parseFloat(text)).toFixed(1));
+                                app.reservedTime = reservedTime;
+
+                            });
+                    }
+                    else {
+                        let allowedTime = (app.timeInVisit - app.reservedTime).toString().replace(".", ",");
+                        fetch("\SaveSelectedThemeToSession?themeId=" + id + "&allowedTime=" + allowedTime + "&isFirst=false")
+                            .then(function (response) {
+                                return response.text();
+                            })
+                            .then(function (text) {
+
+                                let reservedTime = Number(parseFloat(app.reservedTime + parseFloat(text)).toFixed(1));
+                                app.reservedTime = reservedTime;
+
+                                let time = Number((parseFloat(text)).toFixed(1));
+
+                                //добавлять на бэке
+                                fetch("\GetThemeName?id=" + id)
+                                    .then(function (response) {
+                                        return response.text();
+                                    })
+                                    .then(function (text) {
+                                        app.selectedThemes.push({ id: id, name: text, time: time });
+                                    });
+
+                            });
+
+                    }
+                    @*+ "&groupId=" + groupId + "&subjectId=" + subjectId + *@
+                },
+                reset: function () {
+                    //очистку на бэке
+                    this.reservedTime = 0;
+                    this.selectedThemes = [];
+                    this.clearSession();
+                },
+                removeTheme: function (theme) {
+                    var arr = app.selectedThemes;
+                    var index = arr.indexOf(theme);
+                    this.reservedTime -= arr[index].time;
+                    console.log(arr[index].time);
+                    arr.splice(index, 1);  
+                    this.clearItemInSession(theme.id);
+                    //удалять на бэке
+                },
+                calculateModal: function () {
+                    let typeSubject = $("#TypeSubject_Modal").val();
+                    let subjectId = $("#SubjectId").val();
+                    fetch("GetThemesListFromSession/?typeSubject=" + typeSubject + "&subjectId=" + subjectId)
+                        .then(function (response) {
+                            return response.text();
+                        })
+                        .then(function (text) {
+                            $("#modalThemes").empty();
+                            $("#modalThemes").append(text);
+                        });
+                },
+                clearSession: function () {
+                    fetch("ClearSession");
+                },
+                clearItemInSession: function (id) {
+                    fetch("ClearItemInSession/?id=" + id);
+                }
+
+            }
+        })
+    })
 
     //загружаем при помощи get запроса список доступных тем
     async function GetThemesList(i) {

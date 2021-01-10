@@ -325,7 +325,7 @@ namespace Eljur.Controllers
         /// <param name="subjectId"></param>
         /// <returns></returns>
         //themes
-        public IActionResult EditTheme(int? id, string name, int subjectId, int hours, TypeSubjectEnum type)
+        public IActionResult EditTheme(int? id, string name, int subjectId, double hours, TypeSubjectEnum type)
         {
             var find = _db.Theme.Find(id);
             if (find == null)
@@ -342,14 +342,14 @@ namespace Eljur.Controllers
             return RedirectToAction("ThemeView", model);
         }
         [HttpPost]
-        public IActionResult EditTheme(Theme theme)
+        public IActionResult EditTheme(Theme theme, string allowedHours)
         {
             var savedTheme = _db.Theme.Find(theme.Id);
 
             savedTheme.Name = theme.Name;
             savedTheme.Subject = _db.Subject.Find(theme.Subject.Id);
             savedTheme.Type = theme.Type;
-            savedTheme.AllowedHours = theme.AllowedHours;
+            savedTheme.AllowedHours = double.Parse(allowedHours.Replace(".",","));
 
             _db.SaveChanges();
 

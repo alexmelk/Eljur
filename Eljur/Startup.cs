@@ -30,8 +30,14 @@ namespace Eljur
             services.AddDbContext<dbContext>(options =>
                            options.UseNpgsql(Configuration.GetConnectionString("dbConnectingString")));
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<dbContext>();
+
+            services.AddDistributedMemoryCache();
+            services.AddSession();
+
+
             services.AddControllersWithViews();
             services.AddRazorPages();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +60,8 @@ namespace Eljur
 
             app.UseAuthentication();    // подключение аутентификации
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {

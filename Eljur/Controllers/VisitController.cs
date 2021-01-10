@@ -9,14 +9,16 @@ using Eljur.Context;
 using Eljur.Context.Tables;
 using Eljur.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using OfficeOpenXml;
 
 namespace Eljur.Controllers
 {
     [Authorize(Roles = "admin, teacher")]
-    public class VisitController : Controller
+    public partial class VisitController : Controller
     {
         dbContext _db;
         public VisitController(dbContext db)
@@ -74,46 +76,47 @@ namespace Eljur.Controllers
             double hoursPerVisit = default;
             var date = model.Date;
 
-            var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == model.Output.ThemeId).FirstOrDefault();
-
-            if (theme.AllowedHours == (theme.ThemeGroup.UsedHours + 1))
+            var saved = HttpContext.Session.GetString("SessionStorageThemes");
+            var storage = new List<SessionStorageThemes>();
+            if (storage != null)
             {
-                theme.ThemeGroup.UsedHours += 1;
-                hoursPerVisit = 1;
-            }
-            else
-            {
-                theme.ThemeGroup.UsedHours += 2;
-                hoursPerVisit = 2;
+                storage = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
             }
 
-            var typeSubject = model.Output.TypeSubject;
 
-            var visit = new GroupVisit()
-            {
-                Date = date,
-                TypeSubject = typeSubject,
-                Theme = theme,
-                Subject = _db.Subject.Find(model.SubjectId),
-                Group = _db.Group.Find(model.GroupId),
-                HoursPerVisit = hoursPerVisit,
-            };
-            _db.GroupVisit.Add(visit);
+            foreach (var savedTheme in storage) {
+                var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == savedTheme.ThemeId).FirstOrDefault();
 
+                theme.ThemeGroup.UsedHours = savedTheme.ThemeGroup.UsedHours;
+                hoursPerVisit = savedTheme.Reserved;
 
-            foreach (var visitModify in model.Output.VisitsModify)
-            {
-                var studentVisit = new StudentVisit()
+                var typeSubject = theme.Type;
+
+                var visit = new GroupVisit()
                 {
-                    TypeVisit = visitModify.TypeVisit,
-                    Student = _db.Student.Find(visitModify.StudentId),
-                    GroupVisit = visit,
+                    Date = date,
+                    TypeSubject = typeSubject,
+                    Theme = theme,
                     Subject = _db.Subject.Find(model.SubjectId),
+                    Group = _db.Group.Find(model.GroupId),
+                    HoursPerVisit = hoursPerVisit,
                 };
-                _db.StudentVisit.Add(studentVisit);
+                _db.GroupVisit.Add(visit);
 
+
+                foreach (var visitModify in model.Output.VisitsModify)
+                {
+                    var studentVisit = new StudentVisit()
+                    {
+                        TypeVisit = visitModify.TypeVisit,
+                        Student = _db.Student.Find(visitModify.StudentId),
+                        GroupVisit = visit,
+                        Subject = _db.Subject.Find(model.SubjectId),
+                    };
+                    _db.StudentVisit.Add(studentVisit);
+
+                }
             }
-
             _db.SaveChanges();
             return View("VisitAddedView");
 
@@ -404,6 +407,162 @@ namespace Eljur.Controllers
             return answer;
         }
 
+        /// <summary>
+        /// Промежуточное хранение тем
+        /// </summary>
+        /// <param name="themeId"></param>
+        /// <param name="isFirst"></param>
+        /// <returns></returns>
+        public IActionResult SaveSelectedThemeToSession(int themeId, string allowedTime, bool isFirst)
+        {
+
+            if (isFirst) ClearSession();
+            var saved = HttpContext.Session.GetString("SessionStorageThemes");
+
+            if (saved == null)
+            {
+                var themeGroup = new ThemeGroup();
+
+                var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == themeId).FirstOrDefault();
+                var usedHours = theme.ThemeGroup.UsedHours;
+                var allowedHours = theme.AllowedHours;
+
+                if ((allowedHours-usedHours) >= 2) //можем снять 2 часа
+                {
+                    themeGroup.Id = theme.ThemeGroup.Id;
+                    themeGroup.UsedHours = theme.ThemeGroup.UsedHours + 2;
+                    SaveToSession(themeGroup, 2, themeId);
+                    return Ok("2");
+                }
+                else
+                {
+                    if( (allowedHours - usedHours) > 0) //можем снять < 2 часа
+                    {
+                        themeGroup.Id = theme.ThemeGroup.Id;
+                        themeGroup.UsedHours = theme.ThemeGroup.UsedHours + (allowedHours - usedHours);
+                        SaveToSession(themeGroup, (allowedHours - usedHours), themeId);
+                        return Ok(allowedHours - usedHours);
+                    }
+                }
+
+            }
+            else
+            {
+
+                var themeGroup = new ThemeGroup();
+
+                var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == themeId).FirstOrDefault();
+                var usedHours = theme.ThemeGroup.UsedHours;
+                var allowedHours = theme.AllowedHours;
+                var remaining = Math.Round(allowedHours - usedHours, 1);
+
+                themeGroup.Id = theme.ThemeGroup.Id;
+                var allow = Math.Round(Convert.ToDouble(allowedTime), 1);
+
+                if (remaining > allow)
+                {
+                    themeGroup.UsedHours = Math.Round(theme.ThemeGroup.UsedHours + allow, 1);
+                    SaveToSession(themeGroup, allow, themeId);
+                    return Ok(allow);
+                }
+                else
+                {
+                    themeGroup.UsedHours = Math.Round(theme.ThemeGroup.UsedHours + remaining, 1);
+                    SaveToSession(themeGroup, remaining, themeId);
+                    return Ok(remaining);
+                }
+
+            }
+            return Ok();
+            void SaveToSession(ThemeGroup themeGroup, double reserved, int themeId)
+            {
+                var saved = HttpContext.Session.GetString("SessionStorageThemes");
+                if (saved == null)
+                {
+                    var create = new List<SessionStorageThemes>();
+                    create.Add(new SessionStorageThemes() { ThemeGroup = themeGroup, Reserved = reserved, ThemeId = themeId });
+                    var text = JsonConvert.SerializeObject(create);
+                    HttpContext.Session.SetString("SessionStorageThemes", text);
+                }
+                else
+                {
+                    var list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
+                    list.Add(new SessionStorageThemes() { ThemeGroup = themeGroup, Reserved = reserved, ThemeId = themeId });
+                    var text = JsonConvert.SerializeObject(list);
+                    HttpContext.Session.SetString("SessionStorageThemes", text);
+                }
+            }
+        }
+
+        public string GetThemesListFromSession(TypeSubjectEnum typeSubject, int subjectId)
+        {
+            var themes = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x => x.ThemeGroup)
+                .ToList();
+
+            var filteredThemes = themes.Where(x => (x.Subject.Id == subjectId)
+            && (x.Type == typeSubject))
+            .ToList();
+
+            var saved = HttpContext.Session.GetString("SessionStorageThemes");
+            var list = new List<SessionStorageThemes>();
+            if (saved != null) {
+                list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
+            }
+
+            string answer = $"<option disabled selected value=''>Не выбрано</option>";
+            foreach (var theme in filteredThemes)
+            {
+                var savedData = list.Where(x => x.ThemeGroup.Id == theme.ThemeGroup.Id).FirstOrDefault();
+                if (savedData is null)
+                {
+                    bool disabled = theme.AllowedHours <= theme.ThemeGroup.UsedHours;
+
+                    answer += $"<option {(disabled ? "disabled" : "")} " +
+                              $"value='{(disabled ? 0 : theme.Id)}'>{theme.Name} - ({theme.ThemeGroup.UsedHours} из {theme.AllowedHours}) ч.</option>";
+                }
+                else
+                {
+                    bool disabled = theme.AllowedHours <= savedData.ThemeGroup.UsedHours;
+
+                    answer += $"<option {(disabled ? "disabled" : "")} " +
+                              $"value='{(disabled ? 0 : theme.Id)}'>{theme.Name} - ({savedData.ThemeGroup.UsedHours} из {theme.AllowedHours}) ч.</option>";
+                }
+
+            }
+            return answer;
+        }
+
+        public string GetThemeName(int id)
+        {
+            var theme = _db.Theme.Find(id);
+            return $"{theme.Name} ({(TypeSubjectRusEnum)theme.Type})";
+        }
+        public IActionResult ClearSession()
+        {
+            HttpContext.Session.Remove("SessionStorageThemes");
+
+            return Ok();
+        }
+        public IActionResult ClearItemInSession(int id)
+        {
+            var saved = HttpContext.Session.GetString("SessionStorageThemes");
+            var list = new List<SessionStorageThemes>();
+            var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == id).FirstOrDefault();
+            if (saved != null)
+            {
+                list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
+
+                var remove = list.Where(x => x.ThemeGroup.Id == theme.ThemeGroup.Id).FirstOrDefault();
+                list.Remove(remove);
+
+                var text = JsonConvert.SerializeObject(list);
+                HttpContext.Session.SetString("SessionStorageThemes", text);
+            }
+            return Ok();
+        }
+
         [HttpPost]
         public IActionResult VisitFilter(GroupVisitView model, string action)
         {
@@ -447,5 +606,6 @@ namespace Eljur.Controllers
 
             return View("VisitTableView", output);
         }
+
     }
 }
