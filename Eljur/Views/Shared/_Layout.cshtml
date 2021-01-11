@@ -38,7 +38,7 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <a class="navbar-brand" asp-action="Index" asp-controller="Settings">ElJur</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -70,7 +70,7 @@
                     </ul>
               
                 <span class="navbar-text">
-                    <label style="color:white; font-weight:normal;">@User.Identity.Name</label>
+                    <label style="color:white; font-weight:normal; padding-right: 9px;">@User.Identity.Name</label>
                     <a asp-controller="Account" asp-action="Logout" style="color:white; font-weight:bold;" class="btn btn-danger">Выйти</a>
                 </span>
             </div>

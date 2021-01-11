@@ -3,7 +3,7 @@
     ViewData["Title"] = "VisitTableView";
 }
 <br />
-<h2 class="text-muted text-center">Посещения группы @Model?.Visits.FirstOrDefault()?.Group.Name</h2>
+<h2 class="text-muted text-center font-weight-light">Посещения группы @Model?.Visits.FirstOrDefault()?.Group.Name</h2>
 <br />
 <form asp-action="VisitFilter" asp-controller="Visit" method="post" style="background: darkcyan;padding: 30px;border-radius: 3px;">
     <input hidden asp-for="@Model.GroupId" />

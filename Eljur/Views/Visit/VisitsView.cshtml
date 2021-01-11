@@ -3,9 +3,9 @@
     ViewData["Title"] = "Посещения";
 }
 <br />
-<h2 class="text-muted text-center" style="margin-top:0;">Добавление посещения</h2>
+<h2 class="text-muted text-center font-weight-light" style="margin-top:0;">Добавление посещения</h2>
 <br />
-<h6 class="text-muted text-center">Группа: <b>@Model.Input.Group.Name</b>. Предмет: <b>@Model.Input.Subject.Name</b>.</h6>
+<h6 class="text-muted text-center font-weight-light">Группа: <b>@Model.Input.Group.Name</b>. Предмет: <b>@Model.Input.Subject.Name</b>.</h6>
 <br />
 @{int events = Convert.ToInt32(Model.Input.Time / 2);}
 

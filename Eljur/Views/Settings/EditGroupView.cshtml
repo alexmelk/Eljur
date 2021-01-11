@@ -4,7 +4,7 @@
     ViewData["Title"] = "Группы";
 }
 <br />
-<h2 class="text-muted text-center" style="margin-top:0;">Редактировать группу</h2>
+<h2 class="text-muted text-center font-weight-light" style="margin-top:0;">Редактировать группу</h2>
 <br />
 <br />
 <hr />
@@ -43,7 +43,7 @@
             <select class="form-control" name="subjectId" asp-items="@(new SelectList(_db.Subject.Where(x=>!Model.Subjects.Contains(x)).ToList(),"Id","Name"))"></select>
         </div>
         <div>
-            <button class="btn btn-success" style="width:100%;">Прикрепить</button>
+            <button class="btn btn-primary" style="width:100%;">Прикрепить</button>
         </div>
     </form>
 </div>
