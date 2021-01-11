@@ -11,15 +11,13 @@ namespace Eljur.Context.Tables
         public int Id { get; set; }
 
         public DateTime Date { get; set; }
-        public TypeSubjectEnum TypeSubject { get; set; }
-        public double HoursPerVisit { get; set; }
 
         [Required]
         public Group Group { get; set; }
         [Required]
         public Subject Subject { get; set; }
         [Required]
-        public Theme Theme { get; set; }
+        public List<ThemeVisit> ThemeVisits { get; set; }
         [Required]
         public List<StudentVisit> StudentVisits { get; set; }
 

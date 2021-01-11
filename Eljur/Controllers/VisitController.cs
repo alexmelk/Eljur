@@ -73,7 +73,6 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult AddVisit(VisitViewModel model)
         {
-            double hoursPerVisit = default;
             var date = model.Date;
 
             var saved = HttpContext.Session.GetString("SessionStorageThemes");
@@ -83,23 +82,25 @@ namespace Eljur.Controllers
                 storage = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
             }
 
-
-            foreach (var savedTheme in storage) {
+            var themeVisits = new List<ThemeVisit>();
+            foreach (var savedTheme in storage)
+            {
                 var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == savedTheme.ThemeId).FirstOrDefault();
 
                 theme.ThemeGroup.UsedHours = savedTheme.ThemeGroup.UsedHours;
-                hoursPerVisit = savedTheme.Reserved;
-
+                var hoursPerVisit = savedTheme.Reserved;
                 var typeSubject = theme.Type;
+                var themeVisit = new ThemeVisit() { HoursPerVisit = hoursPerVisit, Theme = theme, TypeSubject = typeSubject };
+
+                themeVisits.Add(themeVisit);
+            }
 
                 var visit = new GroupVisit()
                 {
                     Date = date,
-                    TypeSubject = typeSubject,
-                    Theme = theme,
+                    ThemeVisits = themeVisits,
                     Subject = _db.Subject.Find(model.SubjectId),
                     Group = _db.Group.Find(model.GroupId),
-                    HoursPerVisit = hoursPerVisit,
                 };
                 _db.GroupVisit.Add(visit);
 
@@ -116,7 +117,6 @@ namespace Eljur.Controllers
                     _db.StudentVisit.Add(studentVisit);
 
                 }
-            }
             _db.SaveChanges();
             return View("VisitAddedView");
 
@@ -135,7 +135,7 @@ namespace Eljur.Controllers
                 .Include(x => x.StudentVisits)
                 .ThenInclude(x => x.Student)
                 .Include(x => x.Subject)
-                .Include(x => x.Theme)
+                .Include(x => x.ThemeVisits)
                 .Where(x => ((x.Subject.Id == model.Subject.Id) && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.Group.Id))).ToList();
 
             var output = new GroupVisitView() { GroupId = model.Group.Id, SubjectId = model.Subject.Id, Visits = visits,
@@ -168,7 +168,7 @@ namespace Eljur.Controllers
                 .ThenInclude(x => x.Student)
                 .Include(x => x.Subject)
                 .Include(x => x.Group)
-                .Include(x => x.Theme)
+                .Include(x => x.ThemeVisits)
                 .Where(x => ((x.Subject.Id == subjectId)
                         && (x.StudentVisits.FirstOrDefault().Student.Group.Id == groupId)))
                 .ToList();
@@ -196,7 +196,7 @@ namespace Eljur.Controllers
                              .ThenInclude(x => x.Student)
                              .Include(x => x.Subject)
                              .Include(x => x.Group)
-                             .Include(x => x.Theme)
+                             .Include(x => x.ThemeVisits)
                              .Where(x => ((x.Subject.Id == subjectId)
                              && (x.StudentVisits.FirstOrDefault().Student.Group.Id == groupId)))
                              .ToList();
@@ -266,7 +266,7 @@ namespace Eljur.Controllers
                     .ThenInclude(x => x.GroupVisit)
                     .ThenInclude(x => x.Group)
                     .Include(x => x.GroupVisits)
-                    .ThenInclude(x => x.Theme)
+                    .ThenInclude(x => x.ThemeVisits)
                     .Include(x => x.Subjects)
                     .Include(x => x.GroupVisits)
                     .Where(x => x.Id == model.Group.Id)
@@ -312,7 +312,7 @@ namespace Eljur.Controllers
                             package.Workbook.Worksheets["Посещаемость"].Cells[visitType.Address].Value = (TypeSubjectRusEnum)data.TypeSubject;
 
                             var themeName = package.Workbook.Names[$"themeName{i + 1}"];
-                            package.Workbook.Worksheets["Посещаемость"].Cells[themeName.Address].Value = data.Theme.Name;
+                            package.Workbook.Worksheets["Посещаемость"].Cells[themeName.Address].Value = data.ThemeVisits.Name;
 
                             var hoursPerVisit = package.Workbook.Names[$"hoursPerVisit{i + 1}"];
                             package.Workbook.Worksheets["Посещаемость"].Cells[hoursPerVisit.Address].Value = data.HoursPerVisit;
@@ -571,7 +571,7 @@ namespace Eljur.Controllers
                             .ThenInclude(x => x.Student)
                             .Include(x => x.Subject)
                             .Include(x => x.Group)
-                            .Include(x => x.Theme)
+                            .Include(x => x.ThemeVisits)
                             .Where(x => ((x.Subject.Id == model.SubjectId)
                              && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.GroupId)))
                             .ToList();
@@ -595,7 +595,7 @@ namespace Eljur.Controllers
                         Group = x.Group,
                         Id = x.Id,
                         Subject = x.Subject,
-                        Theme = x.Theme,
+                        ThemeVisits = x.ThemeVisits,
                         TypeSubject = x.TypeSubject,
                         StudentVisits = x.StudentVisits.Where(y => y.Student.FIO.ToLower().Contains(model.Filter.LastName.ToLower())).ToList() }).ToList();
                 }

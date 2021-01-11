@@ -24,5 +24,6 @@ namespace Eljur.Context
         public DbSet<GroupVisit> GroupVisit { get; set; }
         public DbSet<StudentVisit> StudentVisit { get; set; }
         public DbSet<ThemeGroup> ThemeGroup { get; set; }
+        public DbSet<ThemeVisit> ThemeVisit { get; set; }
     }
 }
