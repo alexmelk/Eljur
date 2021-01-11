@@ -128,7 +128,6 @@
                 reservedTime: 0.0,
                 themeId: "",
                 modalThemeId:"",
-                subjectId: "",
                 groupId:"",
                 selectedThemes: [],
                 visibleModal: false,
@@ -138,6 +137,15 @@
                     return (this.reservedTime == 0) ? false : true;
                 },
                 isReady: function () {
+                    fetch("\IsAllowAddVisit?subjectId=" + $("#SubjectId").val())
+                        .then(function (response) {
+                            return response.text();
+                        })
+                        .then(function (text) {
+                            var isAllow = text == 'true';
+                            return isAllow;
+                        });
+
                     return this.reservedTime == this.timeInVisit ? false : true;
                 }
             },

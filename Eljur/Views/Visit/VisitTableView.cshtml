@@ -63,22 +63,37 @@
         {
             foreach (var studentVisit in group.StudentVisits)
             {
-                <tr>
-                    <td>@group.Date.ToString("dd.MM.yyyy")</td>
-                    <td>@studentVisit.Student.FIO</td>
-                    <td>@group.Subject.Name</td>
-                    <td>@group.Theme.Name</td>
-                    <td>@Html.DisplayFor(x => studentVisit.TypeVisit)</td>
-                    <td>@Html.DisplayFor(x => group.TypeSubject)</td>
-                    @if (User.IsInRole("admin"))
+        <tr>
+            <td>@group.Date.ToString("dd.MM.yyyy")</td>
+            <td>@studentVisit.Student.FIO</td>
+            <td>@group.Subject.Name</td>
+            <td>
+                <ul>
+                    @foreach (var themeVisit in studentVisit.GroupVisit.ThemeVisits)
                     {
-                        <td align="center">
-                            <a class="btn btn-primary" asp-action="RemoveStudentVisit" asp-controller="Visit" asp-route-id="@studentVisit.Id"
-                               asp-route-groupId="@studentVisit.Student.Group.Id" asp-route-subjectId="@group.Subject.Id" title="Удалить выбранную запись">❌</a>
-                            <a class="btn btn-primary" asp-action="EditStudentVisitView" asp-controller="Visit" asp-route-id="@studentVisit.Id" title="Изменить выбранную запись">✏️</a>
-                        </td>
+                        <li>@themeVisit.Theme.Name</li>
+
                     }
-                </tr>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    @foreach (var themeVisit in studentVisit.GroupVisit.ThemeVisits)
+                    {
+                        <li>@Html.DisplayFor(x => themeVisit.TypeSubject)</li>
+                    }
+                </ul>
+            </td>
+            <td>@Html.DisplayFor(x => studentVisit.TypeVisit)</td>
+            @if (User.IsInRole("admin"))
+            {
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveStudentVisit" asp-controller="Visit" asp-route-id="@studentVisit.Id"
+                       asp-route-groupId="@studentVisit.Student.Group.Id" asp-route-subjectId="@group.Subject.Id" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="EditStudentVisitView" asp-controller="Visit" asp-route-id="@studentVisit.Id" title="Изменить выбранную запись">✏️</a>
+                </td>
+            }
+        </tr>
             }
         }
     </tbody>

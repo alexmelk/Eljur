@@ -103,9 +103,9 @@ namespace Eljur.Controllers
                     Group = _db.Group.Find(model.GroupId),
                 };
                 _db.GroupVisit.Add(visit);
+            
 
-
-                foreach (var visitModify in model.Output.VisitsModify)
+            foreach (var visitModify in model.Output.VisitsModify)
                 {
                     var studentVisit = new StudentVisit()
                     {
@@ -135,7 +135,9 @@ namespace Eljur.Controllers
                 .Include(x => x.StudentVisits)
                 .ThenInclude(x => x.Student)
                 .Include(x => x.Subject)
+                .Include(x=>x.Group)
                 .Include(x => x.ThemeVisits)
+                .ThenInclude(x=>x.Theme)
                 .Where(x => ((x.Subject.Id == model.Subject.Id) && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.Group.Id))).ToList();
 
             var output = new GroupVisitView() { GroupId = model.Group.Id, SubjectId = model.Subject.Id, Visits = visits,
@@ -267,6 +269,7 @@ namespace Eljur.Controllers
                     .ThenInclude(x => x.Group)
                     .Include(x => x.GroupVisits)
                     .ThenInclude(x => x.ThemeVisits)
+                    .ThenInclude(x=>x.Theme)
                     .Include(x => x.Subjects)
                     .Include(x => x.GroupVisits)
                     .Where(x => x.Id == model.Group.Id)
@@ -298,6 +301,7 @@ namespace Eljur.Controllers
 
                         //учёт занятий
                         var groupVisits = group.GroupVisits.Where(x => x.Subject.Id == subject.Id).ToList();
+                        var themeVisits = 1;
                         for (int i = 0; i < groupVisits.Count(); i++)
                         {
                             var data = groupVisits[i];
@@ -305,17 +309,22 @@ namespace Eljur.Controllers
                             var datePlace = package.Workbook.Names[$"time{i + 1}"]; //left page
                             package.Workbook.Worksheets["Посещаемость"].Cells[datePlace.Address].Value = date;
 
-                            var datePlace1 = package.Workbook.Names[$"date_{i + 1}"]; //right page
-                            package.Workbook.Worksheets["Посещаемость"].Cells[datePlace1.Address].Value = date;
 
-                            var visitType = package.Workbook.Names[$"visitType{i + 1}"];
-                            package.Workbook.Worksheets["Посещаемость"].Cells[visitType.Address].Value = (TypeSubjectRusEnum)data.TypeSubject;
+                            foreach (var theme in data.ThemeVisits)
+                            {
+                                var datePlace1 = package.Workbook.Names[$"date_{themeVisits}"]; //right page
+                                package.Workbook.Worksheets["Посещаемость"].Cells[datePlace1.Address].Value = date;
 
-                            var themeName = package.Workbook.Names[$"themeName{i + 1}"];
-                            package.Workbook.Worksheets["Посещаемость"].Cells[themeName.Address].Value = data.ThemeVisits.Name;
+                                var visitType = package.Workbook.Names[$"visitType{themeVisits}"];
+                                package.Workbook.Worksheets["Посещаемость"].Cells[visitType.Address].Value = (TypeSubjectRusEnum)theme.TypeSubject;
 
-                            var hoursPerVisit = package.Workbook.Names[$"hoursPerVisit{i + 1}"];
-                            package.Workbook.Worksheets["Посещаемость"].Cells[hoursPerVisit.Address].Value = data.HoursPerVisit;
+                                var themeName = package.Workbook.Names[$"themeName{themeVisits}"];
+                                package.Workbook.Worksheets["Посещаемость"].Cells[themeName.Address].Value = theme.Theme.Name;
+
+                                var hoursPerVisit = package.Workbook.Names[$"hoursPerVisit{themeVisits}"];
+                                package.Workbook.Worksheets["Посещаемость"].Cells[hoursPerVisit.Address].Value = theme.HoursPerVisit;
+                                themeVisits++;
+                            }
                         }
 
                         var pageLeft = package.Workbook.Names["pageLeft"];
@@ -563,6 +572,35 @@ namespace Eljur.Controllers
             return Ok();
         }
 
+        public IActionResult IsAllowAddVisit(int subjectId)
+        {
+          var themes = _db.Theme
+                .Include(x => x.Subject)
+                .Include(x => x.ThemeGroup)
+                .ToList();
+
+            var filteredThemes = themes.Where(x => (x.Subject.Id == subjectId)).ToList();
+
+            var saved = HttpContext.Session.GetString("SessionStorageThemes");
+            var list = new List<SessionStorageThemes>();
+            if (saved != null) {
+                list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
+            }
+
+            var available = 0.0;
+
+            foreach(var theme in filteredThemes)
+            {
+                available += theme.AllowedHours - theme.ThemeGroup.UsedHours;
+            }
+
+            if ((available < 2)&&(list.Count()!=0)) { return Ok(true); };
+
+            if (list.Sum(x => x.Reserved) == 2) { return Ok(true); };
+
+            return Ok(false);
+        }
+
         [HttpPost]
         public IActionResult VisitFilter(GroupVisitView model, string action)
         {
@@ -571,7 +609,9 @@ namespace Eljur.Controllers
                             .ThenInclude(x => x.Student)
                             .Include(x => x.Subject)
                             .Include(x => x.Group)
-                            .Include(x => x.ThemeVisits)
+                            .ThenInclude(x=>x.GroupVisits)
+                            .ThenInclude(x => x.ThemeVisits)
+                            .ThenInclude(x=>x.Theme)
                             .Where(x => ((x.Subject.Id == model.SubjectId)
                              && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.GroupId)))
                             .ToList();
@@ -591,13 +631,18 @@ namespace Eljur.Controllers
 
                 if (model.Filter.LastName != default)
                 {
-                    visits = visits.Select(x => new GroupVisit() { Date = x.Date,
-                        Group = x.Group,
-                        Id = x.Id,
-                        Subject = x.Subject,
-                        ThemeVisits = x.ThemeVisits,
-                        TypeSubject = x.TypeSubject,
-                        StudentVisits = x.StudentVisits.Where(y => y.Student.FIO.ToLower().Contains(model.Filter.LastName.ToLower())).ToList() }).ToList();
+                    visits = visits.Select(
+                        x => new GroupVisit()
+                        {
+                            Date = x.Date,
+                            Group = x.Group,
+                            Id = x.Id,
+                            Subject = x.Subject,
+                            ThemeVisits = x.ThemeVisits,
+                            StudentVisits = x.StudentVisits.Where(y => y.Student.FIO.ToLower().Contains(model.Filter.LastName.ToLower())).ToList(),
+                        }).ToList();
+                        //ThemeVisits = x.ThemeVisits,
+                        //StudentVisits = x.StudentVisits.Where(y => y.Student.FIO.ToLower().Contains(model.Filter.LastName.ToLower())).ToList() }).ToList().Where(x=>x.ThemeVisits);
                 }
 
             }
