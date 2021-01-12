@@ -448,9 +448,10 @@ namespace Eljur.Controllers
                     if( (allowedHours - usedHours) > 0) //можем снять < 2 часа
                     {
                         themeGroup.Id = theme.ThemeGroup.Id;
-                        themeGroup.UsedHours = theme.ThemeGroup.UsedHours + (allowedHours - usedHours);
-                        SaveToSession(themeGroup, (allowedHours - usedHours), themeId);
-                        return Ok(allowedHours - usedHours);
+                        var time = Math.Round((allowedHours - usedHours), 1);
+                        themeGroup.UsedHours = theme.ThemeGroup.UsedHours + time;
+                        SaveToSession(themeGroup, time, themeId);
+                        return Ok(time);
                     }
                 }
 
@@ -556,18 +557,18 @@ namespace Eljur.Controllers
         }
         public IActionResult ClearItemInSession(int id)
         {
-            var saved = HttpContext.Session.GetString("SessionStorageThemes");
-            var list = new List<SessionStorageThemes>();
-            var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == id).FirstOrDefault();
-            if (saved != null)
-            {
-                list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
+                var saved = HttpContext.Session.GetString("SessionStorageThemes");
+                var list = new List<SessionStorageThemes>();
+                var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == id).FirstOrDefault();
+                if (saved != null)
+                {
+                    list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
 
-                var remove = list.Where(x => x.ThemeGroup.Id == theme.ThemeGroup.Id).FirstOrDefault();
-                list.Remove(remove);
+                    var remove = list.Where(x => x.ThemeGroup.Id == theme.ThemeGroup.Id).FirstOrDefault();
+                    list.Remove(remove);
 
-                var text = JsonConvert.SerializeObject(list);
-                HttpContext.Session.SetString("SessionStorageThemes", text);
+                    var text = JsonConvert.SerializeObject(list);
+                    HttpContext.Session.SetString("SessionStorageThemes", text);
             }
             return Ok();
         }
@@ -591,10 +592,10 @@ namespace Eljur.Controllers
 
             foreach(var theme in filteredThemes)
             {
-                available += theme.AllowedHours - theme.ThemeGroup.UsedHours;
+                available += Math.Round(theme.AllowedHours - theme.ThemeGroup.UsedHours, 1);
             }
 
-            if ((available < 2)&&(list.Count()!=0)) { return Ok(true); };
+            if ((available == list.Sum(x => x.Reserved)) &&(list.Count()!=0)) { return Ok(true); };
 
             if (list.Sum(x => x.Reserved) == 2) { return Ok(true); };
 

@@ -44,7 +44,7 @@
                             <div class="d-inline">
                                 <br />
                                 <label>Список доп. тем (осталось {{parseFloat(timeInVisit-reservedTime).toFixed(1)}}ч. из {{timeInVisit}}ч.)</label>
-                                <a type="button" data-toggle="modal" data-target="#modal" v-on:click="{{calculateModal()}}" v-if="isReady">🔽</a>
+                                <a type="button" data-toggle="modal" data-target="#modal" v-on:click="{{calculateModal()}}" v-if="!isVisibleAddVisit">🔽</a>
                             </div>
 
                             <div v-for="theme in selectedThemes">
@@ -81,7 +81,7 @@
                 }
             </tbody>
         </table>
-        <button v-if="timeInVisit-reservedTime==0" class="btn btn-success">Добавить</button>
+        <button v-if="isVisibleAddVisit" class="btn btn-success">Добавить</button>
     </form>
 
 
@@ -124,29 +124,24 @@
 
             el: '#app',
             data: {
-                timeInVisit:2,
+                timeInVisit: 2,
                 reservedTime: 0.0,
                 themeId: "",
-                modalThemeId:"",
-                groupId:"",
+                modalThemeId: "",
+                groupId: "",
                 selectedThemes: [],
                 visibleModal: false,
+                isVisibleAddVisit: false,
             },
             computed: {
                 visibleAdditional: function () {
                     return (this.reservedTime == 0) ? false : true;
                 },
-                isReady: function () {
-                    fetch("\IsAllowAddVisit?subjectId=" + $("#SubjectId").val())
-                        .then(function (response) {
-                            return response.text();
-                        })
-                        .then(function (text) {
-                            var isAllow = text == 'true';
-                            return isAllow;
-                        });
-
-                    return this.reservedTime == this.timeInVisit ? false : true;
+                isAddidional: function () {
+                    this.isVisibleAddVisit();
+                },
+                allowAdd: function () {
+                    this.isVisibleAddVisit();
                 }
             },
             methods: {
@@ -155,7 +150,7 @@
                         this.reset();
                         console.log(id);
                         let allowedTime = parseFloat(app.timeInVisit - app.reservedTime).toFixed(1).toString().replace(".", ",");
-                        fetch("\SaveSelectedThemeToSession?themeId=" + id + "&allowedTime=" + allowedTime+"&isFirst=true")
+                        fetch("\SaveSelectedThemeToSession?themeId=" + id + "&allowedTime=" + allowedTime + "&isFirst=true")
                             .then(function (response) {
                                 return response.text();
                             })
@@ -198,13 +193,13 @@
                     this.selectedThemes = [];
                     this.clearSession();
                 },
-                removeTheme: function (theme) {
+                removeTheme: async function (theme) {
+                    await this.clearItemInSession(theme.id);
+
                     var arr = app.selectedThemes;
                     var index = arr.indexOf(theme);
                     this.reservedTime -= arr[index].time;
-                    console.log(arr[index].time);
-                    arr.splice(index, 1);  
-                    this.clearItemInSession(theme.id);
+                    arr.splice(index, 1);
                     //удалять на бэке
                 },
                 calculateModal: function () {
@@ -222,11 +217,27 @@
                 clearSession: function () {
                     fetch("ClearSession");
                 },
-                clearItemInSession: function (id) {
-                    fetch("ClearItemInSession/?id=" + id);
+                clearItemInSession: async function (id) {
+                    await fetch("ClearItemInSession/?id=" + id)
+                },
+                overflowTimeCheck: function () {
+                    fetch("\IsAllowAddVisit?subjectId=" + $("#SubjectId").val())
+                        .then(function (response) {
+                            return response.text();
+                        })
+                        .then(function (text) {
+                            var isAllow = text == 'true';
+                            app.isVisibleAddVisit = isAllow;
+                        });
                 }
 
-            }
+            },
+            watch: {
+                reservedTime: function () {
+                    console.log("reservedTime changed");
+                    this.overflowTimeCheck();
+                }
+            },
         })
     })
 
