@@ -96,5 +96,36 @@ namespace Eljur.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
         }
+
+        public async Task<IActionResult> ChangePassword(string name, string newPassword)
+        {
+            User user = await _userManager.FindByNameAsync(name);
+            string errors = "";
+            if (user != null)
+            {
+                var _passwordValidator =
+                    HttpContext.RequestServices.GetService(typeof(IPasswordValidator<User>)) as IPasswordValidator<User>;
+                var _passwordHasher =
+                    HttpContext.RequestServices.GetService(typeof(IPasswordHasher<User>)) as IPasswordHasher<User>;
+
+                IdentityResult result =
+                    await _passwordValidator.ValidateAsync(_userManager, user, newPassword);
+                if (result.Succeeded)
+                {
+                    user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
+                    await _userManager.UpdateAsync(user);
+                    return Ok();
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        errors += error.Description + Environment.NewLine;
+                    }
+                    return Ok(errors);
+                }
+            }
+            return Ok();
+        }
     }
 }

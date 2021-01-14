@@ -413,5 +413,14 @@ namespace Eljur.Controllers
 
             return RedirectToAction("GroupView");
         }
+
+
+        public IActionResult UsersView()
+        {
+            var users = _db.Users;
+            var model = new AdminViewModel() { Users = users.ToList() };
+
+            return View(model);
+        }
     }
 }

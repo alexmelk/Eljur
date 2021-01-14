@@ -1,0 +1,102 @@
+﻿@model AdminViewModel
+@{
+    ViewData["Title"] = "Редактирование пользователей";
+}
+<br />
+<br />
+<h2 class="text-muted text-center font-weight-light" style="margin-top:0;">Пользователи</h2>
+<br />
+<br />
+
+<div id="app">
+    <table class="table table-bordered" id="users" style="text-align:center">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td align="center">@user.Email</td>
+                    <td align="center">
+                        <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#modal" v-on:click="{{setEmail('@user.Email')}}">Сброс пароля</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Сброс пароля</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Введите новый пароль:
+                    <input class="form-control" placeholder="******" v-model="newPassword" />
+                    <ul>
+                        <li v-for="error in errors" style="color:red">
+                            {{error}}
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" required v-on:click="{{updatePassword()}}">Обновить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    //начальная инициализация
+    $(document).ready(function () {
+
+        var app = new Vue({
+
+            el: '#app',
+            data: {
+                newPassword: "",
+                email: "",
+                errors:[],
+            },
+            methods: {
+                updatePassword: function () {
+                    if (app.newPassword == "") return;
+
+                    fetch("@Url.ActionLink("ChangePassword", "Account")?name=" + app.email + "&newPassword=" + app.newPassword)
+                        .then(function (response) {
+                            return response.text();
+                        })
+                        .then(function (text) {
+
+                            if (text == "") {
+                                $('#modal').modal('hide');
+                                app.errors = [];
+                            }
+                            else {
+                                text = text.substring(0, text.length - 2)
+                                var mas = text.split("\n");
+                                app.errors = [];
+                                mas.forEach(function (value, index) { app.errors.push(value); })
+                            }
+
+                        });
+                },
+                setEmail: function (email) {
+                    app.email = email;
+                }
+            },
+        })
+    })
+</script>
