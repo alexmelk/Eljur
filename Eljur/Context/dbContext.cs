@@ -25,5 +25,10 @@ namespace Eljur.Context
         public DbSet<StudentVisit> StudentVisit { get; set; }
         public DbSet<ThemeGroup> ThemeGroup { get; set; }
         public DbSet<ThemeVisit> ThemeVisit { get; set; }
+
+        public DbSet<EducationLevel> EducationLevels { get; set; }
+        public DbSet<EducationDepartment> EducationDepartments { get; set; }
+        public DbSet<Specialization> Specializations { get; set; }
+
     }
 }

@@ -1,0 +1,95 @@
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model List<Eljur.Context.Tables.Specialization>
+@{
+    ViewData["Title"] = "Специализации";
+}
+<br />
+<h2 class="text-muted text-center font-weight-light">Редактировать специализации</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список специализаций</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid" style="text-align:center">
+    <thead>
+        <tr>
+            <th>Название специализации</th>
+            <th>Уровень</th>
+            <th>Прикреплённые группы</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+            var educDep = _db.EducationDepartments.Include(x => x.Specializations).Where(x => x.Specializations.Any(x => x.Id == el.Id)).FirstOrDefault();
+            var educLevel = _db.EducationLevels.Include(x => x.EducationDepartments).Where(x => x.EducationDepartments.Any(x => x.Id == educDep.Id)).FirstOrDefault();
+            
+
+            <tr>
+                <td>@el.Name</td>
+                <td>@educLevel.Name -> @educDep.Name</td>
+                <td>
+                    <ul>
+                        @foreach (var group in el.Groups)
+                        {
+                            <li>@group.Name</li>
+                        }
+                    </ul>
+                </td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveSpecialization" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                </td>
+            </tr>
+                }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Добавить специализацию</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="Settings" asp-action="EditSpecialization">
+        @{ 
+            var elevel = _db.EducationLevels.Include(x => x.EducationDepartments);
+            var edepart = _db.EducationDepartments
+                .Include(x => x.Specializations)
+                .Select(x => new { Id = x.Id, Name = elevel.Where(y => y.EducationDepartments.Any(z => z.Id == x.Id)).FirstOrDefault().Name + " -> " + x.Name }).ToList();
+        }
+        <div class="form-group">
+            <label>Отделение и уровень образования</label>
+            <select class="form-control" name="educationDepartId" asp-items="@(new SelectList(edepart,"Id","Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>Название специализации</label>
+            <input name="name" class="form-control" placeholder="Машинное обучение" />
+        </div>
+        <div>
+            <button class="btn btn-primary" style="width:100%;">Добавить</button>
+        </div>
+    </form>
+</div>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Изменить отделение</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="Settings" asp-action="EditSpecialization">
+        <div class="form-group">
+            <label>Именить</label>
+            <select class="form-control" name="id" asp-items="@(new SelectList(Model,"Id","Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>На</label>
+            <input name="name" class="form-control" placeholder="Машинное обучение" />
+        </div>
+        <div>
+            <button class="btn btn-primary" style="width:100%;">Изменить</button>
+        </div>
+    </form>
+</div>

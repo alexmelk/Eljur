@@ -8,6 +8,23 @@
 <br />
 <br />
 <hr />
+<h6 class="text-center">Специализация [@(Model?.Specialization?.Name)]</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="Settings" asp-action="EditGroupSpecialization" method="get">
+        <input name="id" asp-for="@Model.Id" type="hidden" />
+        <div class="form-group">
+            <label>Специализация</label>
+            <select class="form-control" name="specializationId" asp-items='@(new SelectList(_db.Specializations,"Id","Name"))'></select>
+        </div>
+        <div>
+            <button class="btn btn-primary" style="width:100%;">Изменить</button>
+        </div>
+    </form>
+</div>
+
+<hr />
 <h6 class="text-center">Список предметов</h6>
 <hr />
 <br />

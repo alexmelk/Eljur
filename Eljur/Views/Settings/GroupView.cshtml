@@ -16,6 +16,7 @@
             <th>Название</th>
             <th>Студентов в группе (чел.)</th>
             <th>Предметов в группе (шт.)</th>
+            <th>Специализация</th>
             <th>Действие</th>
         </tr>
     </thead>
@@ -26,6 +27,7 @@
             <td>@el.Name</td>
             <td>@el.Students.Count()</td>
             <td>@el.Subjects.Count()</td>
+            <td>@el.Specialization?.Name</td>
             <td align="center">
                 <a class="btn btn-primary" asp-action="RemoveGroup" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
                 <a class="btn btn-primary" asp-action="EditGroupView" asp-controller="Settings" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>

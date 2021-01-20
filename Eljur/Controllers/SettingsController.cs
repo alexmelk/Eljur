@@ -43,10 +43,12 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult GroupView()
         {
-         var model = _db.Group.Include(a => a.Students)
-                .Include(a => a.Subjects)
-                .Include(a => a.GroupVisits)
-                .ToList();
+            var model = _db.Group
+                   .Include(a=>a.Specialization)
+                   .Include(a => a.Students)
+                   .Include(a => a.Subjects)
+                   .Include(a => a.GroupVisits)
+                   .ToList();
             return View(model);
         }
         /// <summary>
@@ -57,9 +59,10 @@ namespace Eljur.Controllers
         public IActionResult EditGroupView(int id)
         {
             var model = _db.Group
+                .Include(x=>x.Specialization)
                 .Include(x => x.Subjects)
-                .Include(x=>x.Students)
-                .ThenInclude(x=>x.StudentVisits)
+                .Include(x => x.Students)
+                .ThenInclude(x => x.StudentVisits)
                 .Where(x => x.Id == id).FirstOrDefault();
 
             return View(model);
@@ -109,6 +112,145 @@ namespace Eljur.Controllers
             return View(model);
         }
         /// <summary>
+        /// Уровень образования(бакалавриат, специалитет...)
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult EducationLevelsView()
+        {
+            var model = _db.EducationLevels
+                .Include(x => x.EducationDepartments)
+                .ToList();
+
+            return View(model);
+        }
+        [HttpPost]
+        public IActionResult EditEducationLevels(int? id, string name)
+        {
+            if (id is null)
+            {
+                var model = new EducationLevel() { Name = name };
+                _db.EducationLevels.Add(model);
+                _db.SaveChanges();
+
+            }
+            else
+            {
+                var model = _db.EducationLevels.Find(id);
+                model.Name = name;
+                _db.SaveChanges();
+
+            }
+            return RedirectToAction("EducationLevelsView");
+        }
+        public IActionResult RemoveEducationLevels(int id)
+        {
+            var model = _db.EducationLevels
+                .Include(x => x.EducationDepartments)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
+
+            _db.EducationLevels.Remove(model);
+            _db.SaveChanges();
+            return RedirectToAction("EducationLevelsView");
+        }
+        /// <summary>
+        /// Отделения(очное, заочное)
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult EducationDepartmentsView()
+        {
+            var model = _db.EducationDepartments
+                   .Include(x => x.Specializations)
+                   .ToList();
+
+            return View(model);
+        }
+        public IActionResult RemoveEducationDepartment(int id)
+        {
+            var model = _db.EducationDepartments.Find(id);
+            _db.EducationDepartments.Remove(model);
+            _db.SaveChanges();
+            return RedirectToAction("EducationDepartmentsView");
+        }
+        public IActionResult EditEducationDepartment(int id, int educationLevelId, string name)
+        {
+            if (id == 0)
+            {
+
+                var educLevels = _db.EducationLevels
+                    .Include(x => x.EducationDepartments)
+                    .Where(x => x.Id == educationLevelId)
+                    .FirstOrDefault();
+
+                educLevels.EducationDepartments.Add(new EducationDepartment() { Name = name });
+                _db.SaveChanges();
+            }
+            else
+            {
+                var educDep = _db.EducationDepartments.Find(id);
+                educDep.Name = name;
+                _db.SaveChanges();
+            }
+            return RedirectToAction("EducationDepartmentsView");
+        }
+        /// <summary>
+        /// Специализации
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SpecializationsView()
+        {
+            var model = _db.Specializations
+                .Include(x => x.Groups)
+                .ToList();
+
+            return View(model);
+        }
+        public IActionResult RemoveSpecialization(int id)
+        {
+            var model = _db.Specializations.Find(id);
+            _db.Specializations.Remove(model);
+            _db.SaveChanges();
+            return RedirectToAction("SpecializationsView");
+        }
+        public IActionResult EditSpecialization(int id, int educationDepartId, string name)
+        {
+            if (id == 0)
+            {
+                var educDepart = _db.EducationDepartments
+                    .Include(x => x.Specializations)
+                    .Where(x => x.Id == educationDepartId)
+                    .FirstOrDefault();
+
+                educDepart.Specializations.Add(new Specialization() { Name = name });
+                _db.SaveChanges();
+            }
+            else
+            {
+                var spec = _db.Specializations.Find(id);
+                spec.Name = name;
+                _db.SaveChanges();
+            }
+            return RedirectToAction("SpecializationsView");
+        }
+        public IActionResult EditGroupSpecialization(int id, int specializationId)
+        {
+            var spec = _db.Specializations
+                .Include(x => x.Groups)
+                .Where(x => x.Id == specializationId)
+                .FirstOrDefault();
+
+            var m = _db.Group
+                       .Include(x => x.Specialization)
+                       .Include(x => x.Subjects)
+                       .Include(x => x.Students)
+                       .ThenInclude(x => x.StudentVisits)
+                       .Where(x => x.Id == id).FirstOrDefault();
+            m.Specialization = spec;
+            _db.SaveChanges();
+
+            return View("EditGroupView", m);
+        }
+        /// <summary>
         /// Редактирование тем занятий
         /// </summary>
         /// <param name="id"></param>
@@ -117,12 +259,12 @@ namespace Eljur.Controllers
         {
             var model = _db.Theme
                 .Include(x => x.Subject)
-                .Include(x=>x.ThemeGroup)
+                .Include(x => x.ThemeGroup)
                 .Where(x => x.Id == id)
                 .FirstOrDefault();
 
             return View(model);
-        }     
+        }
         /// <summary>
         /// Добавить посещение
         /// </summary>
@@ -133,9 +275,6 @@ namespace Eljur.Controllers
         {
             return RedirectToAction("VisitView", new ChoosePropertyVisit());
         }
-
-
-
         /// <summary>
         /// Редактировать или создать группу
         /// </summary>
@@ -148,7 +287,7 @@ namespace Eljur.Controllers
         {
             var find = _db.Group.Include(x => x.Subjects).Where(x => x.Id == id).FirstOrDefault();
 
-            if(find == null) //если нет, то добавляем
+            if (find == null) //если нет, то добавляем
             {
                 _db.Group.Add(new Group() { Name = name });
                 _db.SaveChanges();
@@ -166,9 +305,10 @@ namespace Eljur.Controllers
                     _db.SaveChanges();
 
                     var m = _db.Group
+                        .Include(x=>x.Specialization)
                         .Include(x => x.Subjects)
-                        .Include(x=>x.Students)
-                        .ThenInclude(x=>x.StudentVisits)
+                        .Include(x => x.Students)
+                        .ThenInclude(x => x.StudentVisits)
                         .Where(x => x.Id == id).FirstOrDefault();
 
                     return View("EditGroupView", m);
@@ -177,7 +317,9 @@ namespace Eljur.Controllers
                 _db.SaveChanges();
             }
 
-            var model = _db.Group.Include(a => a.Students)
+            var model = _db.Group
+                .Include(a=>a.Specialization)
+                .Include(a => a.Students)
                 .Include(a => a.Subjects)
                 .Include(a => a.GroupVisits)
                 .ToList();
@@ -201,10 +343,12 @@ namespace Eljur.Controllers
             _db.Group.Remove(group);
             _db.SaveChanges();
 
-             var model = _db.Group.Include(x => x.Students)
-                .Include(x => x.Subjects)
-                .Include(x => x.GroupVisits)
-                .ToList();
+            var model = _db.Group
+               .Include(x=>x.Specialization)
+               .Include(x => x.Students)
+               .Include(x => x.Subjects)
+               .Include(x => x.GroupVisits)
+               .ToList();
 
             return RedirectToAction("GroupView", model);
         }
@@ -267,7 +411,7 @@ namespace Eljur.Controllers
             var model = _db.Student.Include(x => x.Group)
                 .Include(x => x.StudentVisits)
                 .ToList();
-            
+
             return RedirectToAction("StudentView", model);
         }
         /// <summary>
@@ -349,7 +493,7 @@ namespace Eljur.Controllers
             savedTheme.Name = theme.Name;
             savedTheme.Subject = _db.Subject.Find(theme.Subject.Id);
             savedTheme.Type = theme.Type;
-            savedTheme.AllowedHours = double.Parse(allowedHours.Replace(".",","));
+            savedTheme.AllowedHours = double.Parse(allowedHours.Replace(".", ","));
 
             _db.SaveChanges();
 
@@ -369,7 +513,7 @@ namespace Eljur.Controllers
         {
             var theme = _db.Theme
                 .Include(x => x.Subject)
-                .Include(x=>x.Visits)
+                .Include(x => x.Visits)
                 .Where(x => x.Id == id)
                 .FirstOrDefault();
 
@@ -405,7 +549,11 @@ namespace Eljur.Controllers
 
         public IActionResult ClearVisits(int id)
         {
-            var group = _db.Group.Include(x => x.GroupVisits).ThenInclude(x => x.StudentVisits).FirstOrDefault();
+            var group = _db.Group
+                .Include(x=>x.Specialization)
+                .Include(x => x.GroupVisits)
+                .ThenInclude(x => x.StudentVisits)
+                .FirstOrDefault();
 
             group.GroupVisits.Clear();
 
@@ -413,7 +561,6 @@ namespace Eljur.Controllers
 
             return RedirectToAction("GroupView");
         }
-
 
         public IActionResult UsersView()
         {

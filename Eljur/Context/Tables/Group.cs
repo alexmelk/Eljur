@@ -11,6 +11,8 @@ namespace Eljur.Context.Tables
 
         public string Name { get; set; }
 
+        public Specialization Specialization { get; set; }
+
         public List<Student> Students { get; set; }
         public List<Subject> Subjects { get; set; }
         public List<GroupVisit> GroupVisits { get; set; }

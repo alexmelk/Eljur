@@ -1,0 +1,85 @@
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model List<Eljur.Context.Tables.EducationDepartment>
+@{
+    ViewData["Title"] = "Отделения";
+}
+<br />
+<h2 class="text-muted text-center font-weight-light">Редактировать отделения</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список отделений</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid" style="text-align:center">
+    <thead>
+        <tr>
+            <th>Название отделения</th>
+            <th>Название уровня образования</th>
+            <th>Прикреплённые специализации</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+            <tr>
+                <td>@el.Name</td>
+                <td>@(_db.EducationLevels.Include(x=>x.EducationDepartments).Where(x=>x.EducationDepartments.Any(x=>x.Id==el.Id)).FirstOrDefault().Name)</td>
+                <td>
+                    <ul>
+                        @foreach (var spec in el.Specializations)
+                        {
+                            <li>@spec.Name</li>
+                        }
+                    </ul>
+                </td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveEducationDepartment" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Добавить отделение</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="Settings" asp-action="EditEducationDepartment">
+        <div class="form-group">
+            <label>Уровень образования</label>
+            <select class="form-control" name="educationLevelId" asp-items="@(new SelectList(_db.EducationLevels,"Id","Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>Название отделения</label>
+            <input name="name" class="form-control" placeholder="Очное" />
+        </div>
+        <div>
+            <button class="btn btn-primary" style="width:100%;">Добавить</button>
+        </div>
+    </form>
+</div>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Изменить отделение</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="Settings" asp-action="EditEducationDepartment">
+        <div class="form-group">
+            <label>Именить</label>
+            <select class="form-control" name="id" asp-items="@(new SelectList(Model,"Id","Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>На</label>
+            <input name="name" class="form-control" placeholder="очное" />
+        </div>
+        <div>
+            <button class="btn btn-primary" style="width:100%;">Изменить</button>
+        </div>
+    </form>
+</div>
