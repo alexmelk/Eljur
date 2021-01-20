@@ -95,7 +95,7 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult SubjectView()
         {
-            var model = _db.Subject.Include(a => a.Themes).ToList();
+            var model = _db.Subject.Include(a => a.Themes).Include(x => x.Teacher).ToList();
             return View(model);
         }
         /// <summary>
@@ -249,6 +249,44 @@ namespace Eljur.Controllers
             _db.SaveChanges();
 
             return View("EditGroupView", m);
+        }
+        /// <summary>
+        /// Преподаватели
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult TeachersView()
+        {
+            var model = _db.Teachers
+                .Include(x => x.Subjects)
+                .ToList();
+
+            return View(model);
+        }
+        public IActionResult RemoveTeacher(int id)
+        {
+            var model = _db.Teachers.Find(id);
+            _db.Teachers.Remove(model);
+            _db.SaveChanges();
+            return RedirectToAction("TeachersView");
+        }
+        [HttpPost]
+        public IActionResult EditTeacher(int? id, string name)
+        {
+            if (id is null)
+            {
+                var model = new Teacher() { FIO = name };
+                _db.Teachers.Add(model);
+                _db.SaveChanges();
+
+            }
+            else
+            {
+                var model = _db.Teachers.Find(id);
+                model.FIO = name;
+                _db.SaveChanges();
+
+            }
+            return RedirectToAction("TeachersView");
         }
         /// <summary>
         /// Редактирование тем занятий
@@ -421,21 +459,26 @@ namespace Eljur.Controllers
         /// <param name="name"></param>
         /// <returns></returns>
         //subject
-        public IActionResult EditSubject(int? id, string name)
+        public IActionResult EditSubject(int? id, string name, int teacherId)
         {
             var find = _db.Subject.Find(id);
             if (find == null)
             {
-                _db.Subject.Add(new Subject() { Name = name });
+                _db.Subject.Add(new Subject() { Name = name, Teacher = _db.Teachers.Find(teacherId) });
                 _db.SaveChanges();
             }
             else
             {
-                find.Name = name;
+                if (!string.IsNullOrEmpty(name))
+                {
+                    find.Name = name;
+                }
+                find.Teacher = _db.Teachers.Find(teacherId);
+
                 _db.SaveChanges();
             }
 
-            var model = _db.Subject.Include(a => a.Themes).ToList();
+            var model = _db.Subject.Include(a => a.Themes).Include(x => x.Teacher).ToList();
 
             return RedirectToAction("SubjectView", model);
         }
@@ -457,7 +500,7 @@ namespace Eljur.Controllers
             _db.Subject.Remove(subject);
             _db.SaveChanges();
 
-            var model = _db.Subject.Include(a => a.Themes).ToList();
+            var model = _db.Subject.Include(a => a.Themes).Include(x=>x.Teacher).ToList();
 
             return RedirectToAction("SubjectView", model);
         }

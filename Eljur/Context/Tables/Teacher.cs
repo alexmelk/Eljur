@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace Eljur.Context.Tables
 {
-    public class Subject
+    public class Teacher
     {
         public int Id { get; set; }
+        public string FIO { get; set; }
 
-        public string Name { get; set; }
-        public Teacher Teacher { get; set; }
-        public List<Theme> Themes { get; set; }
+        public List<Subject> Subjects { get; set; }
     }
 }

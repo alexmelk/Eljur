@@ -1,4 +1,5 @@
-﻿@model List<Eljur.Context.Tables.Subject>
+﻿@inject Eljur.Context.dbContext _db
+@model List<Eljur.Context.Tables.Subject>
 @{
     ViewData["Title"] = "Предметы";
 }
@@ -14,6 +15,7 @@
     <thead>
         <tr>
             <th>Название</th>
+            <th>Преподаватель</th>
             <th>Кол-во тем</th>
             <th>Действие</th>
         </tr>
@@ -23,6 +25,7 @@
         {
             <tr>
                 <td>@el.Name</td>
+                <td>@el.Teacher?.FIO</td>
                 <td>@el.Themes.Count()</td>
                 <td align="center">
                     <a class="btn btn-primary" asp-action="RemoveSubject" asp-route-id="@el.Id" asp-controller="Settings" title="Удалить выбранную запись">❌</a>
@@ -40,7 +43,11 @@
     <form asp-controller="Settings" asp-action="EditSubject">
         <div class="form-group">
             <label>Название предмета</label>
-            <input name="name" class="form-control" placeholder="Философия"/>
+            <input name="name" class="form-control" placeholder="Философия" />
+        </div>
+        <div class="form-group">
+            <label>Преподаватель</label>
+            <select class="form-control" name="teacherId" asp-items="@(new SelectList(_db.Teachers, "Id", "FIO"))"></select>
         </div>
         <div>
             <button class="btn btn-primary" style="width:100%;">Добавить</button>
@@ -61,6 +68,10 @@
         <div class="form-group">
             <label>На</label>
             <input name="name" class="form-control" placeholder="Философия" />
+        </div>
+        <div class="form-group">
+            <label>Преподаватель</label>
+            <select class="form-control"  name="teacherId" asp-items="@(new SelectList(_db.Teachers, "Id", "FIO"))" ></select>
         </div>
         <div>
             <button class="btn btn-primary" style="width:100%;">Изменить</button>

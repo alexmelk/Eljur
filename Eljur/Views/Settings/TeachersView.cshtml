@@ -1,0 +1,79 @@
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model List<Eljur.Context.Tables.Teacher>
+@{
+    ViewData["Title"] = "Преподаватели";
+}
+<br />
+<h2 class="text-muted text-center font-weight-light">Редактировать преподавателей</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список преподавателей</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid" style="text-align:center">
+    <thead>
+        <tr>
+            <th>Ф.И.О.</th>
+            <th>Преподаваемые предметы</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+            <tr>
+                <td>@el.FIO</td>
+                <td>
+                    <ul>
+                        @foreach (var subj in el.Subjects)
+                        {
+                            <li>@subj.Name</li>
+                        }
+                    </ul>
+                </td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveTeacher" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Добавить преподавателя</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="Settings" asp-action="EditTeacher">
+        <div class="form-group">
+            <label>Ф.И.О. преподавателя</label>
+            <input name="name" class="form-control" placeholder="Иванов И.И." />
+        </div>
+        <div>
+            <button class="btn btn-primary" style="width:100%;">Добавить</button>
+        </div>
+    </form>
+</div>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Редактировать преподавателя</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="Settings" asp-action="EditTeacher">
+        <div class="form-group">
+            <label>Именить</label>
+            <select class="form-control" name="id" asp-items="@(new SelectList(Model,"Id","FIO"))"></select>
+        </div>
+        <div class="form-group">
+            <label>На</label>
+            <input name="name" class="form-control" placeholder="Иванов И.И." />
+        </div>
+        <div>
+            <button class="btn btn-primary" style="width:100%;">Изменить</button>
+        </div>
+    </form>
+</div>

@@ -29,6 +29,6 @@ namespace Eljur.Context
         public DbSet<EducationLevel> EducationLevels { get; set; }
         public DbSet<EducationDepartment> EducationDepartments { get; set; }
         public DbSet<Specialization> Specializations { get; set; }
-
+        public DbSet<Teacher> Teachers { get; set; }
     }
 }
