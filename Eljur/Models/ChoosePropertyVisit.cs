@@ -11,5 +11,6 @@ namespace Eljur.Models
         public Group Group { get; set; } = new Group();
         public Subject Subject { get; set; } = new Subject();
         public int Time { get; set; }
+        public int Semester { get; set; }
     }
 }

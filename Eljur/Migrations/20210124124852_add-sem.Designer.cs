@@ -3,15 +3,17 @@ using System;
 using Eljur.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20210124124852_add-sem")]
+    partial class addsem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,17 +229,12 @@ namespace Eljur.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int?>("SemesterId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("TeacherId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
-
-                    b.HasIndex("SemesterId");
 
                     b.HasIndex("TeacherId");
 
@@ -532,6 +529,21 @@ namespace Eljur.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("SemesterSubject", b =>
+                {
+                    b.Property<int>("SemestersId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SubjectsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SemestersId", "SubjectsId");
+
+                    b.HasIndex("SubjectsId");
+
+                    b.ToTable("SemesterSubject");
+                });
+
             modelBuilder.Entity("EducationDepartmentEducationLevel", b =>
                 {
                     b.HasOne("Eljur.Context.Tables.EducationDepartment", null)
@@ -645,17 +657,11 @@ namespace Eljur.Migrations
                         .WithMany()
                         .HasForeignKey("GroupId");
 
-                    b.HasOne("Eljur.Context.Tables.Semester", "Semester")
-                        .WithMany("Subjects")
-                        .HasForeignKey("SemesterId");
-
                     b.HasOne("Eljur.Context.Tables.Teacher", "Teacher")
                         .WithMany("Subjects")
                         .HasForeignKey("TeacherId");
 
                     b.Navigation("Group");
-
-                    b.Navigation("Semester");
 
                     b.Navigation("Teacher");
                 });
@@ -747,6 +753,21 @@ namespace Eljur.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SemesterSubject", b =>
+                {
+                    b.HasOne("Eljur.Context.Tables.Semester", null)
+                        .WithMany()
+                        .HasForeignKey("SemestersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Eljur.Context.Tables.Subject", null)
+                        .WithMany()
+                        .HasForeignKey("SubjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Eljur.Context.Tables.EducationDepartment", b =>
                 {
                     b.Navigation("Specializations");
@@ -769,8 +790,6 @@ namespace Eljur.Migrations
             modelBuilder.Entity("Eljur.Context.Tables.Semester", b =>
                 {
                     b.Navigation("GroupVisits");
-
-                    b.Navigation("Subjects");
                 });
 
             modelBuilder.Entity("Eljur.Context.Tables.Specialization", b =>

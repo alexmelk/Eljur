@@ -95,28 +95,28 @@ namespace Eljur.Controllers
                 themeVisits.Add(themeVisit);
             }
 
-                var visit = new GroupVisit()
-                {
-                    Date = date,
-                    ThemeVisits = themeVisits,
-                    Subject = _db.Subject.Find(model.SubjectId),
-                    Group = _db.Group.Find(model.GroupId),
-                };
-                _db.GroupVisit.Add(visit);
-            
+            var visit = new GroupVisit()
+            {
+                Date = date,
+                ThemeVisits = themeVisits,
+                Subject = _db.Subject.Find(model.SubjectId),
+                Group = _db.Group.Find(model.GroupId),
+            };
+            _db.GroupVisit.Add(visit);
+
 
             foreach (var visitModify in model.Output.VisitsModify)
+            {
+                var studentVisit = new StudentVisit()
                 {
-                    var studentVisit = new StudentVisit()
-                    {
-                        TypeVisit = visitModify.TypeVisit,
-                        Student = _db.Student.Find(visitModify.StudentId),
-                        GroupVisit = visit,
-                        Subject = _db.Subject.Find(model.SubjectId),
-                    };
-                    _db.StudentVisit.Add(studentVisit);
+                    TypeVisit = visitModify.TypeVisit,
+                    Student = _db.Student.Find(visitModify.StudentId),
+                    GroupVisit = visit,
+                    Subject = _db.Subject.Find(model.SubjectId),
+                };
+                _db.StudentVisit.Add(studentVisit);
 
-                }
+            }
             _db.SaveChanges();
             return View("VisitAddedView");
 
@@ -129,19 +129,23 @@ namespace Eljur.Controllers
         public IActionResult EditGroupVisit(ChoosePropertyVisit model)
         {
             model.Group = _db.Group.Find(model.Group.Id);
-            model.Subject = _db.Subject.Find(model.Subject.Id);
 
             var visits = _db.GroupVisit
                 .Include(x => x.StudentVisits)
                 .ThenInclude(x => x.Student)
                 .Include(x => x.Subject)
-                .Include(x=>x.Group)
+                .Include(x => x.Group)
                 .Include(x => x.ThemeVisits)
-                .ThenInclude(x=>x.Theme)
-                .Where(x => ((x.Subject.Id == model.Subject.Id) && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.Group.Id))).ToList();
+                .ThenInclude(x => x.Theme)
+                .Where(x => x.Group.Id==model.Group.Id).ToList();
 
-            var output = new GroupVisitView() { GroupId = model.Group.Id, SubjectId = model.Subject.Id, Visits = visits,
-                Filter = new Filter() { From = visits.Min(x => x.Date), Before = visits.Max(x => x.Date) } };
+            var output = new GroupVisitView()
+            {
+                Semester = model.Semester,
+                GroupId = model.Group.Id,
+                Visits = visits,
+                Filter = new Filter() { From = visits.Min(x => x.Date), Before = visits.Max(x => x.Date) }
+            };
 
             return View("VisitTableView", output);
         }
@@ -175,9 +179,12 @@ namespace Eljur.Controllers
                         && (x.StudentVisits.FirstOrDefault().Student.Group.Id == groupId)))
                 .ToList();
 
-            var output = new GroupVisitView() { GroupId = groupId,
-                SubjectId = subjectId,  Visits = visits,
-                Filter = new Filter() { From = visits.Min(x => x.Date), Before = visits.Max(x => x.Date) } 
+            var output = new GroupVisitView()
+            {
+                GroupId = groupId,
+                SubjectId = subjectId,
+                Visits = visits,
+                Filter = new Filter() { From = visits.Min(x => x.Date), Before = visits.Max(x => x.Date) }
             };
 
             return View("VisitTableView", output);
@@ -223,18 +230,30 @@ namespace Eljur.Controllers
         public IActionResult VisitView(ChoosePropertyVisit model, string action)
         {
             model.Group = _db.Group.Find(model.Group.Id);
-            model.Subject = _db.Subject.Find(model.Subject.Id);
 
-            var group = _db.Group.Include(x => x.GroupVisits).Include(x => x.Subjects).Where(x => x.Id == model.Group.Id).FirstOrDefault();
-            var subject = group.Subjects.Where(x => x.Id == model.Subject.Id).ToList();
-            if ((subject.Count() == 0) && (action != "create-for-group"))
+            var group = _db.Group
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.GroupVisits)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
+                .Where(x => x.Id == model.Group.Id)
+                .FirstOrDefault();
+
+            var subject = group.Semesters.Where(x => x.Number == model.Semester).FirstOrDefault()?.Subjects.ToList();
+
+            if ((subject is null) || (subject.Count() == 0))
+            {
+                return View("NoVisits", model);
+            }
+            else
+            if ((subject is null) && (action != "create-for-group"))
             {
                 return View("NoVisits", model);
             }
 
             switch (action)
             {
-                case "create": { return GetExcel(model, allSubjects: false); }
+/*                case "create": { return GetExcel(model, allSubjects: false); }*/
                 case "edit": { return EditGroupVisit(model); }
                 case "create-for-group": { return GetExcel(model, allSubjects: true); }
             }
@@ -249,6 +268,7 @@ namespace Eljur.Controllers
         {
             return GenerateExcel(model, allSubjects);
         }
+
         public FileResult GenerateExcel(ChoosePropertyVisit model, bool allSubjects)
         {
             bool firstSubject = true;
@@ -258,6 +278,7 @@ namespace Eljur.Controllers
 
             using (var outputPakage = new ExcelPackage())
             {
+
                 var group = _db.Group
                     .Include(x => x.Students)
                     .ThenInclude(x => x.StudentVisits)
@@ -267,18 +288,27 @@ namespace Eljur.Controllers
                     .ThenInclude(x => x.StudentVisits)
                     .ThenInclude(x => x.GroupVisit)
                     .ThenInclude(x => x.Group)
-                    .Include(x => x.GroupVisits)
+                    .Include(x => x.Semesters)
+                    .ThenInclude(x => x.GroupVisits)
                     .ThenInclude(x => x.ThemeVisits)
-                    .ThenInclude(x=>x.Theme)
-                    .Include(x => x.Subjects)
-                    .Include(x => x.GroupVisits)
+                    .ThenInclude(x => x.Theme)
+                    .Include(x => x.Semesters)
+                    .ThenInclude(x => x.Subjects)
                     .Where(x => x.Id == model.Group.Id)
                     .FirstOrDefault();
 
                 var students = group.Students.OrderBy(x => x.FIO).ToList();
-                var subjects = allSubjects ? group.Subjects : new List<Subject>() { model.Subject };
 
-                foreach (var subject in subjects.OrderBy(x => x.Name).ToList())
+                var subjectsList = new List<Subject>();
+                subjectsList.AddRange(group.Semesters.Where(x=>x.Number==model.Semester).FirstOrDefault().Subjects);
+                var allowAddNextSemester = group.Semesters.Any(x => x.Number == model.Semester+1);
+
+                if (allowAddNextSemester)
+                    subjectsList.AddRange(group.Semesters.Where(x=>x.Number==model.Semester+1).FirstOrDefault().Subjects);
+
+                var subjects = allSubjects ? subjectsList : new List<Subject>() { model.Subject };
+
+                foreach (var subject in subjects.OrderBy(x => x.Name).ThenBy(x => x.Semester.Number).ToList())
                 {
                     using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
                     {
@@ -299,8 +329,12 @@ namespace Eljur.Controllers
                         var subjectName = package.Workbook.Names[$"SubjectName"];
                         package.Workbook.Worksheets["Посещаемость"].Cells[subjectName.Address].Value = subject.Name;
 
+                        //семестр
+                        var semesterNumberAdress = package.Workbook.Names["semesterNumber"];
+                        package.Workbook.Worksheets["Посещаемость"].Cells[semesterNumberAdress.Address].Value = subject.Semester.Number;
+
                         //учёт занятий
-                        var groupVisits = group.GroupVisits.Where(x => x.Subject.Id == subject.Id).ToList();
+                        var groupVisits = group.Semesters.Where(x=>x.Number==subject.Semester.Number).FirstOrDefault().GroupVisits.Where(x => x.Subject.Id == subject.Id).ToList();
                         var themeVisits = 1;
                         for (int i = 0; i < groupVisits.Count(); i++)
                         {
@@ -332,8 +366,9 @@ namespace Eljur.Controllers
 
                         var pageRight = package.Workbook.Names["pageRight"];
                         package.Workbook.Worksheets["Посещаемость"].Cells[pageRight.Address].Value = page++;
-                         
-                        outputPakage.Workbook.Worksheets.Add(subject.Name, package.Workbook.Worksheets["Посещаемость"]);
+
+
+                        outputPakage.Workbook.Worksheets.Add(subject.Name+" Cеместр №"+subject.Semester.Number, package.Workbook.Worksheets["Посещаемость"]);
                     }
                 }
 
@@ -397,21 +432,21 @@ namespace Eljur.Controllers
         {
             var themes = _db.Theme
                 .Include(x => x.Subject)
-                .Include(x=>x.ThemeGroup)
+                .Include(x => x.ThemeGroup)
                 .ToList();
 
-            var filteredThemes = themes.Where(x => (x.Subject.Id == subjectId) 
+            var filteredThemes = themes.Where(x => (x.Subject.Id == subjectId)
             && (x.Type == typeSubject))
             .ToList();
 
-            string answer = $"<option disabled selected value=''>Не выбрано</option>" ;
+            string answer = $"<option disabled selected value=''>Не выбрано</option>";
             foreach (var theme in filteredThemes)
             {
                 bool disabled = theme.AllowedHours <= theme.ThemeGroup.UsedHours;
 
                 answer += $"<option {(disabled ? "disabled" : "")} " +
                           $"value='{(disabled ? 0 : theme.Id)}'>{theme.Name} - ({theme.ThemeGroup.UsedHours} из {theme.AllowedHours}) ч.</option>";
-                
+
             }
             return answer;
         }
@@ -436,7 +471,7 @@ namespace Eljur.Controllers
                 var usedHours = theme.ThemeGroup.UsedHours;
                 var allowedHours = theme.AllowedHours;
 
-                if ((allowedHours-usedHours) >= 2) //можем снять 2 часа
+                if ((allowedHours - usedHours) >= 2) //можем снять 2 часа
                 {
                     themeGroup.Id = theme.ThemeGroup.Id;
                     themeGroup.UsedHours = theme.ThemeGroup.UsedHours + 2;
@@ -445,7 +480,7 @@ namespace Eljur.Controllers
                 }
                 else
                 {
-                    if( (allowedHours - usedHours) > 0) //можем снять < 2 часа
+                    if ((allowedHours - usedHours) > 0) //можем снять < 2 часа
                     {
                         themeGroup.Id = theme.ThemeGroup.Id;
                         var time = Math.Round((allowedHours - usedHours), 1);
@@ -517,7 +552,8 @@ namespace Eljur.Controllers
 
             var saved = HttpContext.Session.GetString("SessionStorageThemes");
             var list = new List<SessionStorageThemes>();
-            if (saved != null) {
+            if (saved != null)
+            {
                 list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
             }
 
@@ -557,45 +593,46 @@ namespace Eljur.Controllers
         }
         public IActionResult ClearItemInSession(int id)
         {
-                var saved = HttpContext.Session.GetString("SessionStorageThemes");
-                var list = new List<SessionStorageThemes>();
-                var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == id).FirstOrDefault();
-                if (saved != null)
-                {
-                    list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
+            var saved = HttpContext.Session.GetString("SessionStorageThemes");
+            var list = new List<SessionStorageThemes>();
+            var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == id).FirstOrDefault();
+            if (saved != null)
+            {
+                list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
 
-                    var remove = list.Where(x => x.ThemeGroup.Id == theme.ThemeGroup.Id).FirstOrDefault();
-                    list.Remove(remove);
+                var remove = list.Where(x => x.ThemeGroup.Id == theme.ThemeGroup.Id).FirstOrDefault();
+                list.Remove(remove);
 
-                    var text = JsonConvert.SerializeObject(list);
-                    HttpContext.Session.SetString("SessionStorageThemes", text);
+                var text = JsonConvert.SerializeObject(list);
+                HttpContext.Session.SetString("SessionStorageThemes", text);
             }
             return Ok();
         }
 
         public IActionResult IsAllowAddVisit(int subjectId)
         {
-          var themes = _db.Theme
-                .Include(x => x.Subject)
-                .Include(x => x.ThemeGroup)
-                .ToList();
+            var themes = _db.Theme
+                  .Include(x => x.Subject)
+                  .Include(x => x.ThemeGroup)
+                  .ToList();
 
             var filteredThemes = themes.Where(x => (x.Subject.Id == subjectId)).ToList();
 
             var saved = HttpContext.Session.GetString("SessionStorageThemes");
             var list = new List<SessionStorageThemes>();
-            if (saved != null) {
+            if (saved != null)
+            {
                 list = JsonConvert.DeserializeObject<List<SessionStorageThemes>>(saved);
             }
 
             var available = 0.0;
 
-            foreach(var theme in filteredThemes)
+            foreach (var theme in filteredThemes)
             {
                 available += Math.Round(theme.AllowedHours - theme.ThemeGroup.UsedHours, 1);
             }
 
-            if ((available == list.Sum(x => x.Reserved)) &&(list.Count()!=0)) { return Ok(true); };
+            if ((available == list.Sum(x => x.Reserved)) && (list.Count() != 0)) { return Ok(true); };
 
             if (list.Sum(x => x.Reserved) == 2) { return Ok(true); };
 
@@ -605,17 +642,15 @@ namespace Eljur.Controllers
         [HttpPost]
         public IActionResult VisitFilter(GroupVisitView model, string action)
         {
+
             var visits = _db.GroupVisit
-                            .Include(x => x.StudentVisits)
-                            .ThenInclude(x => x.Student)
-                            .Include(x => x.Subject)
-                            .Include(x => x.Group)
-                            .ThenInclude(x=>x.GroupVisits)
-                            .ThenInclude(x => x.ThemeVisits)
-                            .ThenInclude(x=>x.Theme)
-                            .Where(x => ((x.Subject.Id == model.SubjectId)
-                             && (x.StudentVisits.FirstOrDefault().Student.Group.Id == model.GroupId)))
-                            .ToList();
+                .Include(x => x.StudentVisits)
+                .ThenInclude(x => x.Student)
+                .Include(x => x.Subject)
+                .Include(x => x.Group)
+                .Include(x => x.ThemeVisits)
+                .ThenInclude(x => x.Theme)
+                .Where(x => x.Group.Id == model.GroupId).ToList();
 
             if (action == "reset")
             {
@@ -623,32 +658,21 @@ namespace Eljur.Controllers
                 model.Filter.From = visits.Min(x => x.Date);
                 model.Filter.Before = visits.Max(x => x.Date);
                 model.Visits = visits;
-
                 return View("VisitTableView", model);
             }
             else
             {
                 visits = visits.Where(x => (x.Date >= model.Filter.From) && (x.Date <= model.Filter.Before)).ToList();
 
-                if (model.Filter.LastName != default)
-                {
-                    visits = visits.Select(
-                        x => new GroupVisit()
-                        {
-                            Date = x.Date,
-                            Group = x.Group,
-                            Id = x.Id,
-                            Subject = x.Subject,
-                            ThemeVisits = x.ThemeVisits,
-                            StudentVisits = x.StudentVisits.Where(y => y.Student.FIO.ToLower().Contains(model.Filter.LastName.ToLower())).ToList(),
-                        }).ToList();
-                        //ThemeVisits = x.ThemeVisits,
-                        //StudentVisits = x.StudentVisits.Where(y => y.Student.FIO.ToLower().Contains(model.Filter.LastName.ToLower())).ToList() }).ToList().Where(x=>x.ThemeVisits);
-                }
-
+/*                visits = visits.Where(x => x.Group.Students.Any(y => y.FIO.ToLower().Contains(model.Filter.LastName.ToLower()))).ToList();*/
             }
-            var output = new GroupVisitView() { GroupId = model.GroupId, SubjectId = model.SubjectId,
-                Visits = visits, Filter =  model.Filter};
+            var output = new GroupVisitView()
+            {
+                GroupId = model.GroupId,
+                SubjectId = model.SubjectId,
+                Visits = visits,
+                Filter = model.Filter
+            };
 
             return View("VisitTableView", output);
         }

@@ -8,9 +8,12 @@
 <form asp-action="VisitFilter" asp-controller="Visit" method="post" style="background: darkcyan;padding: 30px;border-radius: 3px;">
     <input hidden asp-for="@Model.GroupId" />
     <input hidden asp-for="@Model.SubjectId" />
+    <input hidden asp-for="@Model.Semester" />
     <h4 style="color: white;
-        text-align: center;">Фильтр</h4>
-    <hr style="background: yellowgreen;"/>
+        text-align: center;">
+        Фильтр
+    </h4>
+    <hr style="background: yellowgreen;" />
     <div class="filter">
         <div class="row">
             <div class="col-4">
@@ -66,7 +69,7 @@
         <tr>
             <td>@group.Date.ToString("dd.MM.yyyy")</td>
             <td>@studentVisit.Student.FIO</td>
-            <td>@group.Subject.Name</td>
+            <td>@studentVisit.Subject.Name</td>
             <td>
                 <ul>
                     @foreach (var themeVisit in studentVisit.GroupVisit.ThemeVisits)

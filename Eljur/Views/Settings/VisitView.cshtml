@@ -1,10 +1,11 @@
 ﻿@model ChoosePropertyVisit
+@using Microsoft.EntityFrameworkCore;
 @inject Eljur.Context.dbContext _db
 @{
     ViewData["Title"] = "Отчёт";
 }
 <br />
-<h2 class="text-muted text-center font-weight-light" style="margin-top:0;">Посещаемость</h2>
+<h2 class="text-muted text-center font-weight-light" style="margin-top:0;">Журнал по группе</h2>
 <br />
 <br />
 <body>
@@ -12,26 +13,26 @@
         <div>
             <div class="form-group" style="width:100%">
                 <label>Выберите группу</label>
-                <select class="form-control" asp-for="@Model.Group.Id" asp-items="@(new SelectList(_db.Group, "Id", "Name"))"></select>
+                <select class="form-control" asp-for="@Model.Group.Id" asp-items="@(new SelectList(_db.Group.ToList(), "Id", "Name"))"></select>
             </div>
         </div>
         <div>
             <div class="form-group" style="width:100%">
-                <label>Выберите предмет</label>
-                <select class="form-control" asp-for="@Model.Subject.Id" asp-items="@(new SelectList(_db.Subject, "Id", "Name"))"></select>
+                <label>Выберите семестр</label>
+                <select class="form-control" asp-for="@Model.Semester" asp-items="@(new SelectList(_db.Semesters.GroupBy(x=>x.Number).Select(x=>new { Id = x.Key, Name = x.Key }).OrderBy(x=>x.Id).ToList(), "Id", "Name"))"></select>
             </div>
         </div>
-        <br />
+@*        <br />
         <div>
             <button class="btn btn-success" style="width:100%" name="action" value="create">Создать Excel по предмету📋</button>
-        </div>
+        </div>*@
         <br />
         @if (User.IsInRole("admin"))
         {
-        <div>
-            <button class="btn btn-success" style="width:100%" name="action" value="create-for-group">Создать Excel по группе📋</button>
-        </div>
-        <br />
+            <div>
+                <button class="btn btn-success" style="width:100%" name="action" value="create-for-group">Создать Excel по группе📋</button>
+            </div>
+            <br />
         }
         <div>
             <button class="btn btn-info" style="width:100%" name="action" value="edit">Список посещений</button>

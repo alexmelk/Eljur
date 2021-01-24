@@ -1,4 +1,6 @@
-﻿@model List<Eljur.Context.Tables.Group>
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model List<Eljur.Context.Tables.Group>
 @{
     ViewData["Title"] = "Группы";
 }
@@ -23,17 +25,17 @@
     <tbody>
         @foreach (var el in Model)
         {
-        <tr>
-            <td>@el.Name</td>
-            <td>@el.Students.Count()</td>
-            <td>@el.Subjects.Count()</td>
-            <td>@el.Specialization?.Name</td>
-            <td align="center">
-                <a class="btn btn-primary" asp-action="RemoveGroup" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
-                <a class="btn btn-primary" asp-action="EditGroupView" asp-controller="Settings" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
+            <tr>
+                <td>@el.Name</td>
+                <td>@el.Students.Count()</td>
+                <td>@(_db.Subject.Include(x=>x.Group).Where(x=>x.Group.Id==el.Id).Count())</td>
+                <td>@el.Specialization?.Name</td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveGroup" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                    <a class="btn btn-primary" asp-action="EditGroupView" asp-controller="Settings" asp-route-id="@el.Id" title="Изменить выбранную запись">✏️</a>
 
-            </td>
-        </tr>
+                </td>
+            </tr>
         }
     </tbody>
 </table>

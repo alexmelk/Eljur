@@ -1,0 +1,79 @@
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model List<Eljur.Context.Tables.Semester>
+@{
+    ViewData["Title"] = "Семестры";
+}
+<br />
+<h2 class="text-muted text-center font-weight-light">Редактировать семестр</h2>
+<br />
+<br />
+<hr />
+<h6 class="text-center">Список семестров</h6>
+<hr />
+<br />
+<table class="table table-bordered" id="tableid" style="text-align:center">
+    <thead>
+        <tr>
+            <th>Номер</th>
+            <th>Группа</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var el in Model)
+        {
+            <tr>
+                <td>Семестр №@el.Number</td>
+                <td>@(el.Group.Name); @el.Group.Specialization.EducationLevel.Name->@el.Group.Specialization.EducationDepartment.Name->@el.Group.Specialization.Name</td>
+                <td align="center">
+                    <a class="btn btn-primary" asp-action="RemoveSemester" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<hr />
+<h6 class="text-center">Добавить семестр</h6>
+<hr />
+<br />
+<div style="width: 300px; margin: auto;">
+    <form asp-controller="Settings" asp-action="EditSemester">
+        @*<div class="form-group">
+            <label>Уровень образования</label>
+            <select class="form-control" name="educationLevelId" asp-items="@(new SelectList(_db.EducationLevels,"Id","Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>Отделение</label>
+            <select class="form-control" name="educationDepartmentId" asp-items="@(new SelectList(_db.EducationDepartments,"Id","Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>Специализация</label>
+            <select class="form-control" name="specializationId" asp-items="@(new SelectList(_db.Specializations,"Id","Name"))"></select>
+        </div>*@
+        @{ 
+            var groups = _db.Group
+                .Include(x => x.Specialization)
+                .ThenInclude(x => x.EducationDepartment)
+                .ThenInclude(x => x.EducationLevels);
+
+            var modGroup = groups.Select(x => new { Id = x.Id, Name = x.Name + "->" + x.Specialization.Name + "->" + x.Specialization.EducationDepartment.Name + "->" + x.Specialization.EducationLevel.Name });
+
+
+        }
+
+
+        <div class="form-group">
+            <label>Группа</label>
+            <select class="form-control" name="groupId" asp-items="@(new SelectList(modGroup,"Id","Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>Номер семестра</label>
+            <input class="form-control" name="semesterNumber" type="number" min="1" max="20" step="1" placeholder="1" />
+        </div>
+        <div>
+            <button class="btn btn-primary" style="width:100%;">Добавить</button>
+        </div>
+    </form>
+</div>

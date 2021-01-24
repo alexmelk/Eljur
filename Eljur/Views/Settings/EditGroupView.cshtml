@@ -31,17 +31,22 @@
 <table class="table table-bordered" id="tableid" style="text-align:center">
     <thead>
         <tr>
-            <th>Предмет</th>
-            <th>Действие</th>
+            <th>Cеместр</th>
+            <th>Предметы</th>           
         </tr>
     </thead>
     <tbody>
-        @foreach (var el in Model.Subjects)
+        @foreach (var el in Model.Semesters)
         {
             <tr>
-                <td>@el.Name</td>
-                <td align="center">
-                    <a class="btn btn-primary" asp-action="RemoveGroupSubject" asp-controller="Settings" asp-route-groupId="@Model.Id" asp-route-subjectId="@el.Id" title="Удалить выбранную запись">❌</a>
+                <td>@el.Number</td>
+                <td>
+                    <ul>
+                        @foreach (var subj in el.Subjects)
+                        {
+                        <li> @subj.Name   <a class="btn btn-primary" asp-action="RemoveGroupSubject" asp-controller="Settings" asp-route-groupId="@Model.Id" asp-route-subjectId="@subj.Id" title="Удалить выбранную запись">❌</a></li>
+                        }
+                    </ul>
                 </td>
             </tr>
         }
@@ -55,9 +60,12 @@
 <div style="width: 300px; margin: auto;">
     <form asp-controller="Settings" asp-action="EditGroup" method="get">
         <input name="id" asp-for="@Model.Id" type="hidden" />
+        @{
+            var busySubjects = Model.Semesters.Select(x => x.Subjects);
+        }
         <div class="form-group">
             <label>Предмет</label>
-            <select class="form-control" name="subjectId" asp-items="@(new SelectList(_db.Subject.Where(x=>!Model.Subjects.Contains(x)).ToList(),"Id","Name"))"></select>
+            <select class="form-control" name="subjectId" asp-items="@(new SelectList(_db.Subject.AsEnumerable().Where(x=>!busySubjects.Any(y=>y.Contains(x))).ToList(),"Id","Name"))"></select>
         </div>
         <div>
             <button class="btn btn-primary" style="width:100%;">Прикрепить</button>

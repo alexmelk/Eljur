@@ -1,4 +1,5 @@
 ﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
 @model List<Eljur.Context.Tables.Subject>
 @{
     ViewData["Title"] = "Предметы";
@@ -23,8 +24,9 @@
     <tbody>
         @foreach (var el in Model)
         {
+            var subject = _db.Subject.Include(x => x.Semester).ThenInclude(x => x.Group).Where(x => x.Id == el.Id).FirstOrDefault();
             <tr>
-                <td>@el.Name</td>
+                <td>@el.Name  (@subject.Group.Name; Семестр №@subject.Semester.Number)</td>
                 <td>@el.Teacher?.FIO</td>
                 <td>@el.Themes.Count()</td>
                 <td align="center">
@@ -41,9 +43,21 @@
 <br />
 <div style="width: 300px; margin: auto;">
     <form asp-controller="Settings" asp-action="EditSubject">
+        @{
+            var groups = _db.Group.Include(x => x.Specialization).ThenInclude(x => x.EducationDepartment).ThenInclude(x => x.EducationLevels).ToList();
+            var fullGroup = groups.Select(x => new { Id = x.Id, Name = x.Name + "->" + x.Specialization?.Name + "->" + x.Specialization?.EducationDepartment.Name + "->" + x.Specialization?.EducationLevel.Name });
+        }
         <div class="form-group">
             <label>Название предмета</label>
             <input name="name" class="form-control" placeholder="Философия" />
+        </div>
+        <div class="form-group">
+            <label>Название группы</label>
+            <select class="form-control" name="groupId" asp-items="@(new SelectList(fullGroup, "Id", "Name"))"></select>
+        </div>
+        <div class="form-group">
+            <label>Номер семестра</label>
+            <input class="form-control" name="semesterNumber" type="number" min="1" max="20" step="1" placeholder="1" />
         </div>
         <div class="form-group">
             <label>Преподаватель</label>
@@ -71,7 +85,7 @@
         </div>
         <div class="form-group">
             <label>Преподаватель</label>
-            <select class="form-control"  name="teacherId" asp-items="@(new SelectList(_db.Teachers, "Id", "FIO"))" ></select>
+            <select class="form-control" name="teacherId" asp-items="@(new SelectList(_db.Teachers, "Id", "FIO"))"></select>
         </div>
         <div>
             <button class="btn btn-primary" style="width:100%;">Изменить</button>

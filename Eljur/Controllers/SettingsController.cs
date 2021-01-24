@@ -44,11 +44,14 @@ namespace Eljur.Controllers
         public IActionResult GroupView()
         {
             var model = _db.Group
-                   .Include(a=>a.Specialization)
-                   .Include(a => a.Students)
-                   .Include(a => a.Subjects)
-                   .Include(a => a.GroupVisits)
+                   .Include(x => x.Specialization)
+                   .Include(x => x.Students)
+                   .Include(x => x.Semesters)
+                   .ThenInclude(x => x.GroupVisits)
+                   .Include(x => x.Semesters)
+                   .ThenInclude(x => x.Subjects)
                    .ToList();
+
             return View(model);
         }
         /// <summary>
@@ -59,11 +62,15 @@ namespace Eljur.Controllers
         public IActionResult EditGroupView(int id)
         {
             var model = _db.Group
-                .Include(x=>x.Specialization)
-                .Include(x => x.Subjects)
+                .Include(x => x.Specialization)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.GroupVisits)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
                 .Include(x => x.Students)
                 .ThenInclude(x => x.StudentVisits)
-                .Where(x => x.Id == id).FirstOrDefault();
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
 
             return View(model);
         }
@@ -104,10 +111,12 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult ThemeView()
         {
-            var model = _db.Theme
-                .Include(x => x.Subject)
-                .Include(x => x.ThemeGroup)
-                .ToList();
+
+            var model = _db.Theme.Include(x => x.Subject).ThenInclude(x => x.Semester)
+                   .Include(x => x.Subject).ThenInclude(x => x.Group).ThenInclude(x => x.Semesters)
+                   .Include(x => x.Subject).ThenInclude(x => x.Group).ThenInclude(x => x.Specialization)
+                   .Include(x => x.ThemeGroup)
+                   .ToList();
 
             return View(model);
         }
@@ -212,16 +221,21 @@ namespace Eljur.Controllers
             _db.SaveChanges();
             return RedirectToAction("SpecializationsView");
         }
-        public IActionResult EditSpecialization(int id, int educationDepartId, string name)
+        public IActionResult EditSpecialization(int id, string departAndLevel, string name)
         {
             if (id == 0)
             {
+                var arr = departAndLevel.Split(",");
+                var departId = Convert.ToInt32(arr[0]);
+                var levelId = Convert.ToInt32(arr[1]);
+
                 var educDepart = _db.EducationDepartments
                     .Include(x => x.Specializations)
-                    .Where(x => x.Id == educationDepartId)
+                    .Include(x=>x.EducationLevels)
+                    .Where(x => x.Id == departId)
                     .FirstOrDefault();
 
-                educDepart.Specializations.Add(new Specialization() { Name = name });
+                educDepart.Specializations.Add(new Specialization() { Name = name, EducationLevel = _db.EducationLevels.Find(levelId) });
                 _db.SaveChanges();
             }
             else
@@ -241,7 +255,10 @@ namespace Eljur.Controllers
 
             var m = _db.Group
                        .Include(x => x.Specialization)
-                       .Include(x => x.Subjects)
+                       .Include(x => x.Semesters)
+                       .ThenInclude(x => x.GroupVisits)
+                       .Include(x => x.Semesters)
+                       .ThenInclude(x=>x.Subjects)
                        .Include(x => x.Students)
                        .ThenInclude(x => x.StudentVisits)
                        .Where(x => x.Id == id).FirstOrDefault();
@@ -250,6 +267,34 @@ namespace Eljur.Controllers
 
             return View("EditGroupView", m);
         }
+        /// <summary>
+        /// Семестры
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SemestersView()
+        {
+            var model = _db.Semesters
+                .Include(x => x.Group)
+                .ThenInclude(x=>x.Specialization)
+                .ThenInclude(x => x.EducationDepartment)
+                .ThenInclude(x => x.EducationLevels)
+                .Include(x => x.Subjects)
+                .ToList();
+
+            return View(model);
+        }
+        public IActionResult EditSemester(int groupId, int semesterNumber)
+        {
+            var group = _db.Group.Include(x => x.Semesters).Where(x => x.Id == groupId).FirstOrDefault();
+
+            if (group.Semesters.TrueForAll(x => x.Number != semesterNumber))
+            {
+                group.Semesters.Add(new Semester { Group = group, Number = semesterNumber });
+                _db.SaveChanges();
+            }
+            return RedirectToAction("SemestersView");
+        }
+
         /// <summary>
         /// Преподаватели
         /// </summary>
@@ -323,7 +368,12 @@ namespace Eljur.Controllers
         //group
         public IActionResult EditGroup(int? id, string name, int? subjectId)
         {
-            var find = _db.Group.Include(x => x.Subjects).Where(x => x.Id == id).FirstOrDefault();
+            var find = _db.Group
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.GroupVisits)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
+                .Where(x => x.Id == id).FirstOrDefault();
 
             if (find == null) //если нет, то добавляем
             {
@@ -338,16 +388,18 @@ namespace Eljur.Controllers
                 }
                 else
                 {
-                    find.Subjects.Add(_db.Subject.Find(subjectId));
+                    //доделать
+/*                    find.Subjects.Add(_db.Subject.Find(subjectId));         */
 
                     _db.SaveChanges();
 
-                    var m = _db.Group
-                        .Include(x=>x.Specialization)
-                        .Include(x => x.Subjects)
-                        .Include(x => x.Students)
-                        .ThenInclude(x => x.StudentVisits)
-                        .Where(x => x.Id == id).FirstOrDefault();
+                 var m = _db.Group
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.GroupVisits)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
 
                     return View("EditGroupView", m);
                 }
@@ -358,8 +410,10 @@ namespace Eljur.Controllers
             var model = _db.Group
                 .Include(a=>a.Specialization)
                 .Include(a => a.Students)
-                .Include(a => a.Subjects)
-                .Include(a => a.GroupVisits)
+                .Include(x=>x.Semesters)
+                .ThenInclude(x=>x.GroupVisits)
+                .Include(x=>x.Semesters)
+                .ThenInclude(x=>x.Subjects)
                 .ToList();
 
             return RedirectToAction("GroupView", model);
@@ -374,9 +428,12 @@ namespace Eljur.Controllers
             var group = _db.Group
                 .Include(x => x.Students)
                 .ThenInclude(x => x.StudentVisits)
-                .Include(x => x.Subjects)
-                .Include(x => x.GroupVisits)
-                .Where(x => x.Id == id).FirstOrDefault();
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.GroupVisits)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
 
             _db.Group.Remove(group);
             _db.SaveChanges();
@@ -384,8 +441,10 @@ namespace Eljur.Controllers
             var model = _db.Group
                .Include(x=>x.Specialization)
                .Include(x => x.Students)
-               .Include(x => x.Subjects)
-               .Include(x => x.GroupVisits)
+               .Include(x=>x.Semesters)
+               .ThenInclude(x=>x.GroupVisits)
+               .Include(x=>x.Semesters)
+               .ThenInclude(x=>x.Subjects)
                .ToList();
 
             return RedirectToAction("GroupView", model);
@@ -459,15 +518,29 @@ namespace Eljur.Controllers
         /// <param name="name"></param>
         /// <returns></returns>
         //subject
-        public IActionResult EditSubject(int? id, string name, int teacherId)
+        public IActionResult EditSubject(int? id, string name, int teacherId, int groupId, int semesterNumber)
         {
+            var semesters = _db.Group
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
+                .ThenInclude(x => x.Teacher)
+                .Where(x => x.Id == groupId)
+                .FirstOrDefault()
+                .Semesters;
+
             var find = _db.Subject.Find(id);
-            if (find == null)
+            if (find == null)               //предмет ранее не добавлен
             {
-                _db.Subject.Add(new Subject() { Name = name, Teacher = _db.Teachers.Find(teacherId) });
-                _db.SaveChanges();
+                var selectedSemester = semesters.Where(x => x.Number == semesterNumber).FirstOrDefault();
+                var semesterExist = selectedSemester is null ? false : true;
+
+                if (semesterExist)
+                {
+                    selectedSemester.Subjects.Add(new Subject { Name = name, Teacher = _db.Teachers.Find(teacherId), Group = _db.Group.Find(groupId) });
+                    _db.SaveChanges();
+                }
             }
-            else
+            else                            //редактируем
             {
                 if (!string.IsNullOrEmpty(name))
                 {
@@ -490,8 +563,11 @@ namespace Eljur.Controllers
         public IActionResult RemoveSubject(int id)
         {
             var subject = _db.Subject
+                .Include(x => x.Teacher)
                 .Include(x => x.Themes)
-                .ThenInclude(x => x.Visits)
+                .Include(x => x.Themes).ThenInclude(x => x.ThemeGroup)
+                .Include(x => x.Themes).ThenInclude(x => x.Visits).ThenInclude(x=>x.ThemeVisits).ThenInclude(x=>x.Theme)
+                .Include(x => x.Themes).ThenInclude(x => x.Visits).ThenInclude(x => x.StudentVisits).ThenInclude(x=>x.Student)
                 .Where(x => x.Id == id)
                 .FirstOrDefault();
 
@@ -521,12 +597,7 @@ namespace Eljur.Controllers
                 _db.SaveChanges();
             }
 
-            var model = _db.Theme
-                .Include(x => x.Subject)
-                .Include(x => x.ThemeGroup)
-                .ToList();
-
-            return RedirectToAction("ThemeView", model);
+            return RedirectToAction("ThemeView");
         }
         [HttpPost]
         public IActionResult EditTheme(Theme theme, string allowedHours)
@@ -540,12 +611,7 @@ namespace Eljur.Controllers
 
             _db.SaveChanges();
 
-            var model = _db.Theme
-                .Include(x => x.Subject)
-                .Include(x => x.ThemeGroup)
-                .ToList();
-
-            return RedirectToAction("ThemeView", model);
+            return RedirectToAction("ThemeView");
         }
         /// <summary>
         /// Удалить тему
@@ -565,12 +631,7 @@ namespace Eljur.Controllers
             _db.Theme.Remove(theme);
             _db.SaveChanges();
 
-            var model = _db.Theme
-                .Include(x => x.Subject)
-                .Include(x => x.ThemeGroup)
-                .ToList();
-
-            return RedirectToAction("ThemeView", model);
+            return RedirectToAction("ThemeView");
         }
         /// <summary>
         /// Удалить прикрепление предмета к группе
@@ -581,24 +642,41 @@ namespace Eljur.Controllers
         //group-subject
         public IActionResult RemoveGroupSubject(int groupId, int subjectId)
         {
-            var group = _db.Group.Include(x => x.Subjects).Where(x => x.Id == groupId).FirstOrDefault();
-            var subject = group.Subjects.Where(x => x.Id == subjectId).FirstOrDefault();
-            group.Subjects.Remove(subject);
+            var group = _db.Group
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.GroupVisits)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
+                .Where(x => x.Id == groupId).FirstOrDefault();
+
+            //доделать
+            /*            var subject = group.Subjects.Where(x => x.Id == subjectId).FirstOrDefault();
+                        group.Subjects.Remove(subject);*/
             _db.SaveChanges();
 
-            var model = _db.Group.Include(a => a.Subjects).Where(x => x.Id == groupId).FirstOrDefault();
+            var model = _db.Group
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.GroupVisits)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
+                .Where(x => x.Id == groupId)
+                .FirstOrDefault();
             return View("EditGroupView", model);
         }
 
         public IActionResult ClearVisits(int id)
         {
             var group = _db.Group
-                .Include(x=>x.Specialization)
-                .Include(x => x.GroupVisits)
+                .Include(x => x.Specialization)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.GroupVisits)
+                .Include(x => x.Semesters)
+                .ThenInclude(x => x.Subjects)
+                .Include(x => x.Students)
                 .ThenInclude(x => x.StudentVisits)
                 .FirstOrDefault();
 
-            group.GroupVisits.Clear();
+            group.Semesters.Clear();
 
             _db.SaveChanges();
 

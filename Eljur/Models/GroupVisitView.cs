@@ -10,6 +10,7 @@ namespace Eljur.Models
     {
         public int GroupId { get; set; }
         public int SubjectId { get; set; }
+        public int Semester { get; set; }
         public List<GroupVisit> Visits { get; set; }
         public Filter Filter{get;set;}
      

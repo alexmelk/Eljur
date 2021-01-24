@@ -57,11 +57,12 @@
             var elevel = _db.EducationLevels.Include(x => x.EducationDepartments);
             var edepart = _db.EducationDepartments
                 .Include(x => x.Specializations)
-                .Select(x => new { Id = x.Id, Name = elevel.Where(y => y.EducationDepartments.Any(z => z.Id == x.Id)).FirstOrDefault().Name + " -> " + x.Name }).ToList();
+                .Select(x => new { Id = $"{x.Id},{elevel.Where(y => y.EducationDepartments.Any(z => z.Id == x.Id)).FirstOrDefault().Id}", 
+                    Name = elevel.Where(y => y.EducationDepartments.Any(z => z.Id == x.Id)).FirstOrDefault().Name + " -> " + x.Name }).ToList();
         }
         <div class="form-group">
             <label>Отделение и уровень образования</label>
-            <select class="form-control" name="educationDepartId" asp-items="@(new SelectList(edepart,"Id","Name"))"></select>
+            <select class="form-control" name="departAndLevel" asp-items="@(new SelectList(edepart,"Id","Name"))"></select>
         </div>
         <div class="form-group">
             <label>Название специализации</label>
