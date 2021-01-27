@@ -10,7 +10,6 @@ namespace Eljur.Context.Tables
     {
         public int Id { get; set; }
 
-        [Required]
         public Student Student { get; set; }
         [Required]
         public GroupVisit GroupVisit { get; set; }

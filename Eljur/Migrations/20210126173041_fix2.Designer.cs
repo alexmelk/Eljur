@@ -3,15 +3,17 @@ using System;
 using Eljur.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20210126173041_fix2")]
+    partial class fix2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,6 +105,9 @@ namespace Eljur.Migrations
                     b.Property<int?>("SubjectId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ThemeId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
@@ -110,6 +115,8 @@ namespace Eljur.Migrations
                     b.HasIndex("SemesterId");
 
                     b.HasIndex("SubjectId");
+
+                    b.HasIndex("ThemeId");
 
                     b.ToTable("GroupVisit");
                 });
@@ -189,7 +196,7 @@ namespace Eljur.Migrations
                     b.Property<int>("GroupVisitId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("StudentId")
+                    b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("SubjectId")
@@ -571,6 +578,10 @@ namespace Eljur.Migrations
                         .WithMany()
                         .HasForeignKey("SubjectId");
 
+                    b.HasOne("Eljur.Context.Tables.Theme", null)
+                        .WithMany("Visits")
+                        .HasForeignKey("ThemeId");
+
                     b.Navigation("Group");
 
                     b.Navigation("Subject");
@@ -621,7 +632,9 @@ namespace Eljur.Migrations
 
                     b.HasOne("Eljur.Context.Tables.Student", "Student")
                         .WithMany("StudentVisits")
-                        .HasForeignKey("StudentId");
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Eljur.Context.Tables.Subject", "Subject")
                         .WithMany()
@@ -786,6 +799,11 @@ namespace Eljur.Migrations
             modelBuilder.Entity("Eljur.Context.Tables.Teacher", b =>
                 {
                     b.Navigation("Subjects");
+                });
+
+            modelBuilder.Entity("Eljur.Context.Tables.Theme", b =>
+                {
+                    b.Navigation("Visits");
                 });
 #pragma warning restore 612, 618
         }

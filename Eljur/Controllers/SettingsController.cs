@@ -518,7 +518,7 @@ namespace Eljur.Controllers
         /// <param name="name"></param>
         /// <returns></returns>
         //subject
-        public IActionResult EditSubject(int? id, string name, int teacherId, int groupId, int semesterNumber)
+        public IActionResult EditSubject(int? id, string name, int teacherId, int groupId, int semesterNumber, AttestationEnum attestationEnum, string attestationHouse)
         {
             var semesters = _db.Group
                 .Include(x => x.Semesters)
@@ -536,7 +536,12 @@ namespace Eljur.Controllers
 
                 if (semesterExist)
                 {
-                    selectedSemester.Subjects.Add(new Subject { Name = name, Teacher = _db.Teachers.Find(teacherId), Group = _db.Group.Find(groupId) });
+                    selectedSemester.Subjects.Add(new Subject { Name = name, 
+                        Teacher = _db.Teachers.Find(teacherId), 
+                        Group = _db.Group.Find(groupId), 
+                        Attestation = attestationEnum, 
+                        AttestationHours = double.Parse(attestationHouse.Replace(".", ","))
+                    });
                     _db.SaveChanges();
                 }
             }
@@ -566,12 +571,12 @@ namespace Eljur.Controllers
                 .Include(x => x.Teacher)
                 .Include(x => x.Themes)
                 .Include(x => x.Themes).ThenInclude(x => x.ThemeGroup)
-                .Include(x => x.Themes).ThenInclude(x => x.Visits).ThenInclude(x=>x.ThemeVisits).ThenInclude(x=>x.Theme)
-                .Include(x => x.Themes).ThenInclude(x => x.Visits).ThenInclude(x => x.StudentVisits).ThenInclude(x=>x.Student)
+                .Include(x=>x.Semester).ThenInclude(x=>x.GroupVisits).ThenInclude(x=>x.ThemeVisits)
+                .Include(x => x.Semester).ThenInclude(x => x.GroupVisits).ThenInclude(x => x.StudentVisits)
                 .Where(x => x.Id == id)
                 .FirstOrDefault();
 
-            subject.Themes.Clear();
+            //subject.Themes.Clear();
 
             _db.Subject.Remove(subject);
             _db.SaveChanges();
@@ -622,11 +627,8 @@ namespace Eljur.Controllers
         {
             var theme = _db.Theme
                 .Include(x => x.Subject)
-                .Include(x => x.Visits)
                 .Where(x => x.Id == id)
                 .FirstOrDefault();
-
-            theme.Visits.Clear();
 
             _db.Theme.Remove(theme);
             _db.SaveChanges();

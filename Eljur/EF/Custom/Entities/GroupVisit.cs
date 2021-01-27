@@ -11,11 +11,11 @@ namespace Eljur.Context.Tables
         public int Id { get; set; }
 
         public DateTime Date { get; set; }
-
         [Required]
         public Group Group { get; set; }
         [Required]
         public Subject Subject { get; set; }
+
         [Required]
         public List<ThemeVisit> ThemeVisits { get; set; }
         [Required]

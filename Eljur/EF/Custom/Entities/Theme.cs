@@ -14,15 +14,13 @@ namespace Eljur.Context.Tables
         public double AllowedHours { get; set; }
 
         public TypeSubjectEnum Type { get; set; }
-
         [Required]
         public Subject Subject { get; set; }
-        public List<GroupVisit> Visits { get; set; }
 
         [Required]
         public Semester Semester { get; set; }
 
-        [Required]
         public ThemeGroup ThemeGroup { get; set; }
+
     }
 }
