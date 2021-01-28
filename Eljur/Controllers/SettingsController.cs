@@ -565,9 +565,11 @@ namespace Eljur.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        /// TODO: refactor DB
         public IActionResult RemoveSubject(int id)
         {
             var subject = _db.Subject
+                .Include(x=>x.Semester.Group)
                 .Include(x => x.Teacher)
                 .Include(x => x.Themes)
                 .Include(x => x.Themes).ThenInclude(x => x.ThemeGroup)
@@ -576,8 +578,19 @@ namespace Eljur.Controllers
                 .Where(x => x.Id == id)
                 .FirstOrDefault();
 
-            //subject.Themes.Clear();
+            var themeVisit = _db.ThemeVisit.Include(x => x.Theme).ToList();
+            var needRemove = themeVisit.Where(x => subject.Themes.Any(y => y.Id == x.Theme.Id)).ToList();
+            themeVisit.RemoveAll(x=>needRemove.Contains(x));
 
+            var groupVisit = _db.GroupVisit.Include(x => x.Subject).ToList();
+            var needRemoveGroupVisit = groupVisit.Where(x => subject.Id==x.Subject.Id).ToList();
+            groupVisit.RemoveAll(x => needRemoveGroupVisit.Contains(x));
+
+            var studentVisit = _db.StudentVisit.Include(x => x.Subject).ToList();
+            var needRemoveStudentVisit = studentVisit.Where(x => subject.Id == x.Subject.Id).ToList();
+            studentVisit.RemoveAll(x => needRemoveStudentVisit.Contains(x));
+
+            _db.SaveChanges();
             _db.Subject.Remove(subject);
             _db.SaveChanges();
 
@@ -598,7 +611,8 @@ namespace Eljur.Controllers
             var find = _db.Theme.Find(id);
             if (find == null)
             {
-                _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId), Type = type, AllowedHours = hours, ThemeGroup = new ThemeGroup() });
+                _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId), Type = type, AllowedHours = hours, ThemeGroup = new ThemeGroup(),
+                    Semester = _db.Subject.Include(x=>x.Semester).Where(x=>x.Id==subjectId).FirstOrDefault().Semester});
                 _db.SaveChanges();
             }
 

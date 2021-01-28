@@ -646,6 +646,8 @@ namespace Eljur.Controllers
             var visits = _db.GroupVisit
                 .Include(x => x.StudentVisits)
                 .ThenInclude(x => x.Student)
+                .Include(x=>x.StudentVisits)
+                .ThenInclude(x=>x.Subject)
                 .Include(x => x.Subject)
                 .Include(x => x.Group)
                 .Include(x => x.ThemeVisits)

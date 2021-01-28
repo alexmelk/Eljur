@@ -18,6 +18,7 @@
             <th>Название</th>
             <th>Преподаватель</th>
             <th>Кол-во тем (шт.)</th>
+            <th>Кол-во часов</th>
             <th>Тип аттестации</th>
             <th>Время на аттестацию (ч.)</th>
             <th>Действие</th>
@@ -31,6 +32,7 @@
                 <td>@el.Name  (@subject.Group.Name; Семестр №@subject.Semester.Number)</td>
                 <td>@el.Teacher?.FIO</td>
                 <td>@el.Themes.Count()</td>
+                <td>@el.Themes.Sum(x=>x.AllowedHours)</td>
                 <td>@Html.DisplayFor(x=>el.Attestation)</td>
                 <td>@el.AttestationHours</td>
                 <td align="center">
