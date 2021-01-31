@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Eljur.EF.Custom.Entities;
+using System.Collections.Generic;
 
 namespace Eljur.Context.Tables
 {
@@ -11,5 +12,6 @@ namespace Eljur.Context.Tables
         public Group Group { get; set; }
         public List<Subject> Subjects { get; set; }
         public List<GroupVisit> GroupVisits { get; set; }
+        public List<SemesterStudent> SemesterStudents { get; set; }
     }
 }

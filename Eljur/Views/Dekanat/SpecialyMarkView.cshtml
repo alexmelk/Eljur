@@ -1,0 +1,35 @@
+﻿@model SpecialyMarkModel
+@{
+    ViewData["Title"] = "Специальные отметки";
+}
+<br />
+<h2 class="text-center text-muted  font-weight-light">Редактирование особых отметок</h2>
+<br />
+<br />
+
+<div id="app">
+    <form asp-controller="Dekanat" asp-action="EditSpecialyMark" style="margin: 0 auto; width:900px;">
+        <input asp-for="@Model.Semester.Id" type="hidden" />
+        <table class="table table-bordered">
+            <thead align="center">
+                <tr>
+                    <th>Студент</th>
+                    <th>Особая отметка</th>
+                </tr>
+            <tbody>
+                @{ var counter = 0;}
+                @foreach (var student in Model.Students.OrderBy(x => x.FIO))
+                {
+                    <tr>
+                        <td>@student.FIO</td>
+                        <td>
+                            <input class="form-control" asp-for="@Model.SpecialyMark[counter]" value="@Model.SpecialyMark[counter]" type="text" />
+                        </td>
+                    </tr>
+                    counter++;
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-primary">Сохранить</button>
+    </form>
+</div>

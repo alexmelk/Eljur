@@ -11,7 +11,7 @@ using Eljur.Models;
 
 namespace Eljur.Controllers
 {
-    [Authorize(Roles = "admin, teacher")]
+    [Authorize(Roles = "admin, teacher, dekan, dekanat")]
     public class SettingsController : Controller
     {
         public dbContext _db;
@@ -656,28 +656,15 @@ namespace Eljur.Controllers
         /// <param name="subjectId"></param>
         /// <returns></returns>
         //group-subject
-        public IActionResult RemoveGroupSubject(int groupId, int subjectId)
+        public IActionResult RemoveGroupSubject(int semesterId, int subjectId)
         {
-            var group = _db.Group
-                .Include(x => x.Semesters)
-                .ThenInclude(x => x.GroupVisits)
-                .Include(x => x.Semesters)
-                .ThenInclude(x => x.Subjects)
-                .Where(x => x.Id == groupId).FirstOrDefault();
+            var semester = _db.Semesters.Include(x => x.Subjects).Where(x => x.Id == semesterId).FirstOrDefault();
 
-            //доделать
-            /*            var subject = group.Subjects.Where(x => x.Id == subjectId).FirstOrDefault();
-                        group.Subjects.Remove(subject);*/
+            semester.Subjects.Remove(_db.Subject.Find(subjectId));
+
             _db.SaveChanges();
 
-            var model = _db.Group
-                .Include(x => x.Semesters)
-                .ThenInclude(x => x.GroupVisits)
-                .Include(x => x.Semesters)
-                .ThenInclude(x => x.Subjects)
-                .Where(x => x.Id == groupId)
-                .FirstOrDefault();
-            return View("EditGroupView", model);
+            return View("Index");
         }
 
         public IActionResult ClearVisits(int id)

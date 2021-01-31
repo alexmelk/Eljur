@@ -44,7 +44,7 @@
                     <ul>
                         @foreach (var subj in el.Subjects)
                         {
-                        <li> @subj.Name   <a class="btn btn-primary" asp-action="RemoveGroupSubject" asp-controller="Settings" asp-route-groupId="@Model.Id" asp-route-subjectId="@subj.Id" title="Удалить выбранную запись">❌</a></li>
+                        <li> @subj.Name   <a class="btn btn-primary" asp-action="RemoveGroupSubject" asp-controller="Settings" asp-route-semesterId="@el.Id" asp-route-subjectId="@subj.Id" title="Удалить выбранную запись">❌</a></li>
                         }
                     </ul>
                 </td>

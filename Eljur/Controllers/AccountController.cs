@@ -78,8 +78,9 @@ namespace Eljur.Controllers
             return View(model);
         }
         [HttpGet]
-        public IActionResult Login()
+        public async Task<IActionResult> Login()
         {
+            //admin, user(teacher), dekan, dekanat
             //User user = new User { Email = "user@mail.ru", UserName = "user@mail.ru", };
             ////// добавляем пользователя
             //IdentityResult result1 = await _userManager.CreateAsync(user, "userUser1!");
@@ -87,6 +88,25 @@ namespace Eljur.Controllers
             //await _roleManager.CreateAsync(new IdentityRole("teacher"));
 
             //await _userManager.AddToRoleAsync(user, "teacher");
+
+
+/*          //// добавляем деканат
+            User user = new User { Email = "dekanat@mail.ru", UserName = "dekanat@mail.ru", };
+            IdentityResult result1 = await _userManager.CreateAsync(user, "dekanatDekanat1!");
+
+            await _roleManager.CreateAsync(new IdentityRole("dekanat"));
+
+            await _userManager.AddToRoleAsync(user, "dekanat");*/
+
+/*            //// добавляем декана
+            User user = new User { Email = "dekan@mail.ru", UserName = "dekan@mail.ru", };
+            IdentityResult result1 = await _userManager.CreateAsync(user, "dekanDekan1!");
+
+            await _roleManager.CreateAsync(new IdentityRole("dekan"));
+
+            await _userManager.AddToRoleAsync(user, "dekan");*/
+
+
             return View(new LoginViewModel());
         }
 

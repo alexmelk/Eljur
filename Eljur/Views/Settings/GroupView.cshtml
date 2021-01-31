@@ -17,7 +17,6 @@
         <tr>
             <th>Название</th>
             <th>Студентов в группе (чел.)</th>
-            <th>Предметов в группе (шт.)</th>
             <th>Специализация</th>
             <th>Действие</th>
         </tr>
@@ -28,7 +27,6 @@
             <tr>
                 <td>@el.Name</td>
                 <td>@el.Students.Count()</td>
-                <td>@(_db.Subject.Include(x=>x.Group).Where(x=>x.Group.Id==el.Id).Count())</td>
                 <td>@el.Specialization?.Name</td>
                 <td align="center">
                     <a class="btn btn-primary" asp-action="RemoveGroup" asp-controller="Settings" asp-route-id="@el.Id" title="Удалить выбранную запись">❌</a>

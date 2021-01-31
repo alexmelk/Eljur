@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Eljur.Context.Tables;
+using Eljur.EF.Custom.Entities;
 
 namespace Eljur.Context
 {
@@ -31,5 +32,6 @@ namespace Eljur.Context
         public DbSet<Specialization> Specializations { get; set; }
         public DbSet<Teacher> Teachers { get; set; }
         public DbSet<Semester> Semesters { get; set; }
+        public DbSet<SemesterStudent> SemesterStudents { get; set; }
     }
 }
