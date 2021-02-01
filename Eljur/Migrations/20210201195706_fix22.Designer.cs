@@ -3,15 +3,17 @@ using System;
 using Eljur.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20210201195706_fix22")]
+    partial class fix22
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,7 +105,7 @@ namespace Eljur.Migrations
                     b.Property<int?>("SubjectId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ThemeId")
+                    b.Property<int?>("ThemeId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -200,7 +202,7 @@ namespace Eljur.Migrations
                     b.Property<int?>("SubjectId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ThemeId")
+                    b.Property<int?>("ThemeId")
                         .HasColumnType("integer");
 
                     b.Property<int>("TypeVisit")
@@ -286,6 +288,9 @@ namespace Eljur.Migrations
                     b.Property<int>("SubjectId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ThemeGroupId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
@@ -293,13 +298,17 @@ namespace Eljur.Migrations
 
                     b.HasIndex("SubjectId");
 
+                    b.HasIndex("ThemeGroupId");
+
                     b.ToTable("Theme");
                 });
 
             modelBuilder.Entity("Eljur.Context.Tables.ThemeGroup", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .UseIdentityByDefaultColumn();
 
                     b.Property<double>("UsedHours")
                         .HasColumnType("double precision");
@@ -597,10 +606,8 @@ namespace Eljur.Migrations
                         .HasForeignKey("SubjectId");
 
                     b.HasOne("Eljur.Context.Tables.Theme", "Theme")
-                        .WithMany("GroupVisits")
-                        .HasForeignKey("ThemeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("ThemeId");
 
                     b.Navigation("Group");
 
@@ -663,10 +670,8 @@ namespace Eljur.Migrations
                         .HasForeignKey("SubjectId");
 
                     b.HasOne("Eljur.Context.Tables.Theme", "Theme")
-                        .WithMany("StudentVisits")
-                        .HasForeignKey("ThemeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("ThemeId");
 
                     b.Navigation("GroupVisit");
 
@@ -706,18 +711,13 @@ namespace Eljur.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Eljur.Context.Tables.ThemeGroup", "ThemeGroup")
+                        .WithMany()
+                        .HasForeignKey("ThemeGroupId");
+
                     b.Navigation("Subject");
-                });
 
-            modelBuilder.Entity("Eljur.Context.Tables.ThemeGroup", b =>
-                {
-                    b.HasOne("Eljur.Context.Tables.Theme", "Theme")
-                        .WithOne("ThemeGroup")
-                        .HasForeignKey("Eljur.Context.Tables.ThemeGroup", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Theme");
+                    b.Navigation("ThemeGroup");
                 });
 
             modelBuilder.Entity("Eljur.Context.Tables.ThemeVisit", b =>
@@ -857,12 +857,6 @@ namespace Eljur.Migrations
 
             modelBuilder.Entity("Eljur.Context.Tables.Theme", b =>
                 {
-                    b.Navigation("GroupVisits");
-
-                    b.Navigation("StudentVisits");
-
-                    b.Navigation("ThemeGroup");
-
                     b.Navigation("ThemeVisits");
                 });
 #pragma warning restore 612, 618

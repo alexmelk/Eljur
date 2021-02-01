@@ -85,7 +85,7 @@ namespace Eljur.Controllers
             var themeVisits = new List<ThemeVisit>();
             foreach (var savedTheme in storage)
             {
-                var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == savedTheme.ThemeId).FirstOrDefault();
+                var theme = _db.Theme.Include(x => x.ThemeGroup).Include(x=>x.Subject).ThenInclude(x=>x.Semester).Where(x => x.Id == savedTheme.ThemeId).FirstOrDefault();
 
                 theme.ThemeGroup.UsedHours = savedTheme.ThemeGroup.UsedHours;
                 var hoursPerVisit = savedTheme.Reserved;
@@ -101,9 +101,10 @@ namespace Eljur.Controllers
                 ThemeVisits = themeVisits,
                 Subject = _db.Subject.Find(model.SubjectId),
                 Group = _db.Group.Find(model.GroupId),
+                Semester = _db.Subject.Include(x=>x.Semester).Where(x=>x.Id==model.SubjectId).FirstOrDefault().Semester,
+                Theme = themeVisits.FirstOrDefault().Theme
             };
             _db.GroupVisit.Add(visit);
-
 
             foreach (var visitModify in model.Output.VisitsModify)
             {
@@ -113,10 +114,13 @@ namespace Eljur.Controllers
                     Student = _db.Student.Find(visitModify.StudentId),
                     GroupVisit = visit,
                     Subject = _db.Subject.Find(model.SubjectId),
+                    Theme = visit.ThemeVisits.FirstOrDefault().Theme
                 };
                 _db.StudentVisit.Add(studentVisit);
-
+                visit.StudentVisits.Add(studentVisit);
+                visit.Theme.StudentVisits.Add(studentVisit);
             }
+
             _db.SaveChanges();
             return View("VisitAddedView");
 
@@ -292,10 +296,10 @@ namespace Eljur.Controllers
 
                 var subjectsList = new List<Subject>();
                 subjectsList.AddRange(group.Semesters.Where(x=>x.Number==model.Semester).FirstOrDefault().Subjects);
-                var allowAddNextSemester = group.Semesters.Any(x => x.Number == model.Semester+1);
+                var allowAddNextSemester = group.Semesters.Any(x => x.Number == model.Semester + 1);
 
                 if (allowAddNextSemester)
-                    subjectsList.AddRange(group.Semesters.Where(x=>x.Number==model.Semester+1).FirstOrDefault().Subjects);
+                    subjectsList.AddRange(group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().Subjects);
 
                 var subjects = allSubjects ? subjectsList : new List<Subject>() { model.Subject };
 
@@ -305,9 +309,9 @@ namespace Eljur.Controllers
                     {
                         if (firstSubject) 
                         {
-                            var visits = subjectsList.FirstOrDefault().Semester?.GroupVisits;
+                            var minDate = subjectsList.Select(x=>x.Semester?.GroupVisits.Min(x=>x.Date)).FirstOrDefault();
 
-                            var firstVisit = visits.Count==0?DateTime.Now.Year:visits.FirstOrDefault().Date.Year;
+                            var firstVisit = minDate is null ? DateTime.Now.Year : minDate.Value.Year;
                             //год начала
                             var firstYear = package.Workbook.Names[$"_1_1_firstYear"];
                             package.Workbook.Worksheets["Начало"].Cells[firstYear.Address].Value = firstVisit;
@@ -353,8 +357,6 @@ namespace Eljur.Controllers
 
                                 counter++;
                             }
-
-
 
                             outputPakage.Workbook.Worksheets.Add("Начало", package.Workbook.Worksheets["Начало"]); firstSubject = false; 
                         }
@@ -514,9 +516,9 @@ namespace Eljur.Controllers
 
             if (saved == null)
             {
-                var themeGroup = new ThemeGroup();
 
                 var theme = _db.Theme.Include(x => x.ThemeGroup).Where(x => x.Id == themeId).FirstOrDefault();
+                var themeGroup = new ThemeGroup();
                 var usedHours = theme.ThemeGroup.UsedHours;
                 var allowedHours = theme.AllowedHours;
 

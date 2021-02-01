@@ -611,8 +611,7 @@ namespace Eljur.Controllers
             var find = _db.Theme.Find(id);
             if (find == null)
             {
-                _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId), Type = type, AllowedHours = hours, ThemeGroup = new ThemeGroup(),
-                    Semester = _db.Subject.Include(x=>x.Semester).Where(x=>x.Id==subjectId).FirstOrDefault().Semester});
+                _db.Theme.Add(new Theme() { Name = name, Subject = _db.Subject.Find(subjectId), Type = type, AllowedHours = hours, ThemeGroup = new ThemeGroup() });
                 _db.SaveChanges();
             }
 
@@ -627,7 +626,6 @@ namespace Eljur.Controllers
             savedTheme.Subject = _db.Subject.Find(theme.Subject.Id);
             savedTheme.Type = theme.Type;
             savedTheme.AllowedHours = double.Parse(allowedHours.Replace(".", ","));
-
             _db.SaveChanges();
 
             return RedirectToAction("ThemeView");
@@ -639,10 +637,13 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult RemoveTheme(int id)
         {
-            var theme = _db.Theme
-                .Include(x => x.Subject)
-                .Where(x => x.Id == id)
-                .FirstOrDefault();
+            var theme = _db.Theme.Find(id);
+                /*                .Include(x=>x.Subject).ThenInclude(x=>x.Semester).ThenInclude(x=>x.GroupVisits).ThenInclude(x=>x.ThemeVisits)
+                                .Include(x => x.Subject).ThenInclude(x => x.Semester).ThenInclude(x => x.GroupVisits).ThenInclude(x => x.StudentVisits)
+                                .Include(x=>x.ThemeGroup)*/
+
+/*                .Where(x => x.Id == id)*/
+/*                .FirstOrDefault();*/
 
             _db.Theme.Remove(theme);
             _db.SaveChanges();

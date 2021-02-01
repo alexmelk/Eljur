@@ -17,9 +17,13 @@ namespace Eljur.Context.Tables
         public Subject Subject { get; set; }
 
         [Required]
+        public Semester Semester { get; set; }
+        [Required]
         public List<ThemeVisit> ThemeVisits { get; set; }
         [Required]
         public List<StudentVisit> StudentVisits { get; set; }
+        [Required]
+        public Theme Theme { get; set; }
 
     }
 }

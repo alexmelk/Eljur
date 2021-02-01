@@ -15,5 +15,8 @@ namespace Eljur.Context.Tables
 
         [Required]
         public Theme Theme { get; set; }
+
+        [Required]
+        public GroupVisit GroupVisit { get; set; }
     }
 }

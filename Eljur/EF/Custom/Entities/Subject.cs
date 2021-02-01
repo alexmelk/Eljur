@@ -15,6 +15,7 @@ namespace Eljur.Context.Tables
         public Semester Semester { get; set; }
         public Group Group { get; set; }
         public Teacher Teacher { get; set; }
+
         public AttestationEnum Attestation { get; set; }
         public double AttestationHours { get; set; }
 

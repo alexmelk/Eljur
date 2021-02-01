@@ -3,15 +3,17 @@ using System;
 using Eljur.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20210201202103_fix23")]
+    partial class fix23
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,7 +105,7 @@ namespace Eljur.Migrations
                     b.Property<int?>("SubjectId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ThemeId")
+                    b.Property<int?>("ThemeId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -597,10 +599,8 @@ namespace Eljur.Migrations
                         .HasForeignKey("SubjectId");
 
                     b.HasOne("Eljur.Context.Tables.Theme", "Theme")
-                        .WithMany("GroupVisits")
-                        .HasForeignKey("ThemeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("ThemeId");
 
                     b.Navigation("Group");
 
@@ -857,8 +857,6 @@ namespace Eljur.Migrations
 
             modelBuilder.Entity("Eljur.Context.Tables.Theme", b =>
                 {
-                    b.Navigation("GroupVisits");
-
                     b.Navigation("StudentVisits");
 
                     b.Navigation("ThemeGroup");

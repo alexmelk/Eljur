@@ -15,6 +15,8 @@ namespace Eljur.Context.Tables
         public GroupVisit GroupVisit { get; set; }
         [Required]
         public Subject Subject { get; set; }
+        [Required]
+        public Theme Theme { get; set; }
         public TypeVisitEnum TypeVisit { get; set; }
     }
 }
