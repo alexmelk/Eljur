@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Eljur.Context;
+using Eljur.Context.Tables;
 using Eljur.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -80,6 +81,47 @@ namespace Eljur.Controllers
             _db.SaveChanges();
 
             return RedirectToAction("Index","Settings");
+        }
+
+
+        public IActionResult ChooseGroupForCheck()
+        {
+            return View(new Semester());
+        }
+
+        [HttpPost]
+        public IActionResult ChooseGroupForCheck(Semester semester)
+        {
+
+            var sem = _db.Semesters.Include(x => x.Checks).Where(x => x.Id == semester.Id).FirstOrDefault();
+            while (sem.Checks.Count() != 13)
+            {
+                sem.Checks.Add(new Check() { Semester = _db.Semesters.Find(semester.Id), Text = "", Date = default });
+                _db.SaveChanges();
+            }
+            var texts = sem.Checks.Select(x => x.Text).ToList();
+            var dates = sem.Checks.Select(x => x.Date).ToList();
+
+            return View("CheckView", new CheckModel { Texts = texts, Dates = dates, SemesterId = sem.Id });
+        }
+
+        [HttpPost]
+        public IActionResult EditCheck(CheckModel checks)
+        {
+            var sem = _db.Semesters.Include(x => x.Checks).Where(x => x.Id == checks.SemesterId).FirstOrDefault();
+
+            for (int i = 0; i < checks.Texts?.Count(); i++)
+            {
+                sem.Checks[i].Text = checks.Texts[i];
+            }
+            for (int i = 0; i < checks.Dates?.Count(); i++)
+            {
+                sem.Checks[i].Date = checks.Dates[i];
+            }
+            _db.SaveChanges();
+
+            if (User.IsInRole("admin")) return RedirectToAction("Index", "Settings");
+            return View("Index");
         }
 
 

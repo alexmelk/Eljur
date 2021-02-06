@@ -1,6 +1,6 @@
 ﻿@inject Eljur.Context.dbContext _db
 @using Microsoft.EntityFrameworkCore;
-@model SpecialyMarkModel
+@model Eljur.Context.Tables.Semester
 @{
     ViewData["Title"] = "Выбор группы";
 }
@@ -9,13 +9,13 @@
 <br />
 <br />
 <hr />
-<form asp-controller="Dekanat" asp-action="ChooseGroupForSpecialyMark">
+<form asp-controller="Shared" asp-action="ChooseGroupForComments">
     @{
         var list = _db.Semesters.Include(x => x.Group)
               .Select(x => new { Id = x.Id, Name = x.Group.Name + "(Семестр №" + x.Number + ")" }).ToList();
     }
     <div style="margin:0 auto; width:300px;">
-        <select class="form-control" asp-for="@Model.Semester.Id" asp-items="@(new SelectList(list, "Id", "Name"))"></select>
+        <select class="form-control" asp-for="@Model.Id" asp-items="@(new SelectList(list, "Id", "Name"))"></select>
         <br />
         <div>
             <button class="btn btn-primary" style="width:100%">Далее</button>

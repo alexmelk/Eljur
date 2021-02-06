@@ -1,0 +1,84 @@
+﻿@model CommentsModel
+@{
+    ViewData["Title"] = "Редактирование замечний";
+}
+<br />
+@if (User.IsInRole("dekan"))
+{
+    <h2 class="text-center text-muted  font-weight-light">Редактирование решений, принятых деканом факультета</h2>
+}
+else if (User.IsInRole("teacher"))
+{
+    <h2 class="text-center text-muted  font-weight-light">
+        Редактирование замечаний преподавателей кафедр
+    </h2>
+}
+else if (User.IsInRole("admin"))
+{
+    <h2 class="text-center text-muted  font-weight-light">
+        Редактирование замечаний
+    </h2>
+}
+<br />
+<br />
+
+<div id="app">
+    <form asp-controller="Shared" asp-action="EditComments" style="margin: 0 auto; width:900px;">
+        <input asp-for="@Model.SemesterId" value="@Model.SemesterId" type="hidden" />
+        <table class="table table-bordered">
+            <thead align="center">
+                <tr>
+                    <th>
+                        Замечания преподавателей кафедр
+                    </th>
+                    <th>
+                        Принятые деканом факультета решения
+                    </th>
+                </tr>
+            <tbody>
+                @for (int i = 0; i < Model.TeacherDescriptions.Count(); i++)
+                {
+                <tr>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <td>
+                            <input class="form-control" asp-for="@Model.TeacherDescriptions[i]" value="@Model.TeacherDescriptions[i]" type="text" />
+                        </td>
+                        <td>
+                            <input class="form-control" asp-for="@Model.DekanDescriptions[i]" value="@Model.DekanDescriptions[i]" type="text" />
+                        </td>
+                    }
+                    else if (User.IsInRole("teacher"))
+                    {
+                        <td>
+                            <input class="form-control" asp-for="@Model.TeacherDescriptions[i]" value="@Model.TeacherDescriptions[i]" type="text" />
+                        </td>
+                        <td>
+                            <input class="form-control" asp-for="@Model.DekanDescriptions[i]" value="@Model.DekanDescriptions[i]" disabled type="text" />
+                        </td>
+                    }
+                    else if (User.IsInRole("dekan"))
+                    {
+                        <td>
+                            <input class="form-control" asp-for="@Model.TeacherDescriptions[i]" value="@Model.TeacherDescriptions[i]" type="text" disabled />
+                        </td>
+                        @if (!string.IsNullOrEmpty(Model.TeacherDescriptions[i]))
+                        {
+                            <td>
+                                <input class="form-control" asp-for="@Model.DekanDescriptions[i]" value="@Model.DekanDescriptions[i]" type="text" />
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                <input class="form-control" asp-for="@Model.DekanDescriptions[i]" value="@Model.DekanDescriptions[i]" type="text" disabled />
+                            </td>
+                        }
+                    }
+                </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-primary">Сохранить</button>
+    </form>
+</div>

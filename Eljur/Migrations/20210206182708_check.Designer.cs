@@ -3,15 +3,17 @@ using System;
 using Eljur.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20210206182708_check")]
+    partial class check
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -624,11 +626,9 @@ namespace Eljur.Migrations
 
             modelBuilder.Entity("Eljur.Context.Tables.Check", b =>
                 {
-                    b.HasOne("Eljur.Context.Tables.Semester", "Semester")
+                    b.HasOne("Eljur.Context.Tables.Semester", null)
                         .WithMany("Checks")
                         .HasForeignKey("SemesterId");
-
-                    b.Navigation("Semester");
                 });
 
             modelBuilder.Entity("Eljur.Context.Tables.Comment", b =>

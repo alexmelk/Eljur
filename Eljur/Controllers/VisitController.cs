@@ -289,7 +289,10 @@ namespace Eljur.Controllers
                     .Include(x => x.Students).ThenInclude(x => x.StudentVisits).ThenInclude(x => x.GroupVisit).ThenInclude(x => x.Group)
                     .Include(x => x.Semesters).ThenInclude(x => x.GroupVisits).ThenInclude(x => x.ThemeVisits).ThenInclude(x => x.Theme)
                     .Include(x => x.Semesters).ThenInclude(x => x.Subjects)
+                    .Include(x => x.Semesters).ThenInclude(x => x.Comments)
+                    .Include(x => x.Semesters).ThenInclude(x => x.Checks)
                     .Include(x => x.Specialization).ThenInclude(x => x.EducationDepartment)
+                    
                     .Where(x => x.Id == model.Group.Id).FirstOrDefault();
 
                 var students = group.Students.OrderBy(x => x.FIO).ToList();
@@ -367,6 +370,74 @@ namespace Eljur.Controllers
 
                 using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
                 {
+                    //Замечания преподавателей
+                    var commentsForFirstSem = group.Semesters.Where(x => x.Number == model.Semester).FirstOrDefault().Comments;
+                    var counter = 1;
+                    foreach(var com in commentsForFirstSem)
+                    {
+                        var teacherDescr = package.Workbook.Names[$"_3_1_TeacherDescr{counter}"];
+                        package.Workbook.Worksheets["Конец"].Cells[teacherDescr.Address].Value = com.TeacherDescription;
+
+                        var dekanDescr = package.Workbook.Names[$"_3_1_DekanDescr{counter}"];
+                        package.Workbook.Worksheets["Конец"].Cells[dekanDescr.Address].Value = com.DekanDescription;
+
+                        counter++;
+                    }
+
+                    counter = 1;
+
+                    if (allowAddNextSemester)
+                    {
+                        var commentsForSecondSem = group.Semesters.Where(x => x.Number == model.Semester+1).FirstOrDefault().Comments;
+                        foreach (var com in commentsForSecondSem)
+                        {
+                            var teacherDescr = package.Workbook.Names[$"_3_2_TeacherDescr{counter}"];
+                            package.Workbook.Worksheets["Конец"].Cells[teacherDescr.Address].Value = com.TeacherDescription;
+
+                            var dekanDescr = package.Workbook.Names[$"_3_2_DekanDescr{counter}"];
+                            package.Workbook.Worksheets["Конец"].Cells[dekanDescr.Address].Value = com.DekanDescription;
+
+                            counter++;
+                        }
+                    }
+
+                    //контроль деканата за ведением журнала
+
+                    var checksForFirstSem = group.Semesters.Where(x => x.Number == model.Semester).FirstOrDefault().Checks;
+                    counter = 1;
+                    foreach (var check in checksForFirstSem)
+                    {
+                        if (check.Date != default)
+                        {
+                            var date = package.Workbook.Names[$"_3_3_date{counter}"];
+                            package.Workbook.Worksheets["Конец"].Cells[date.Address].Value = check.Date.ToString("dd.MM.yyyy");
+                        }
+
+                        var result = package.Workbook.Names[$"_3_3_result{counter}"];
+                        package.Workbook.Worksheets["Конец"].Cells[result.Address].Value = check.Text;
+
+                        counter++;
+                    }
+
+                    counter = 1;
+
+                    if (allowAddNextSemester)
+                    {
+                        var checksForSecondSem = group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().Checks;
+                        foreach (var check in checksForSecondSem)
+                        {
+                            if (check.Date != default)
+                            {
+                                var date = package.Workbook.Names[$"_3_4_date{counter}"];
+                                package.Workbook.Worksheets["Конец"].Cells[date.Address].Value = check.Date.ToString("dd.MM.yyyy");
+                            }
+                            var result = package.Workbook.Names[$"_3_4_result{counter}"];
+                            package.Workbook.Worksheets["Конец"].Cells[result.Address].Value = check.Text;
+
+                            counter++;
+                        }
+                    }
+
                     outputPakage.Workbook.Worksheets.Add("Конец", package.Workbook.Worksheets["Конец"]);
                 }
                 outputPakage.SaveAs(stream);

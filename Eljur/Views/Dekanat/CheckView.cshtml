@@ -1,0 +1,33 @@
+﻿@model CheckModel
+@{
+    ViewData["Title"] = "Контроль деканата за ведением журнала";
+}
+<br />
+<h2 class="text-center text-muted  font-weight-light">Контроль деканата за ведением журнала</h2>
+<br />
+<br />
+
+<div id="app">
+    <form asp-controller="Dekanat" asp-action="EditCheck" style="margin: 0 auto; width:900px;">
+        <input asp-for="@Model.SemesterId" type="hidden" />
+        <table class="table table-bordered">
+            <thead align="center">
+                <tr>
+                    <th>Дата</th>
+                    <th>Результат проверки</th>
+                </tr>
+            <tbody>
+                @for (int i = 0; i < Model.Dates.Count(); i++)
+                {
+                    <tr>
+                        <td style="display:grid;"><input asp-for="@Model.Dates[i]" type="date" placeholder="Дата" /></td>
+                        <td>
+                            <input class="form-control" asp-for="@Model.Texts[i]" value="@Model.Texts[i]" type="text" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-primary">Сохранить</button>
+    </form>
+</div>

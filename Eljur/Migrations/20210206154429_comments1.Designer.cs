@@ -3,15 +3,17 @@ using System;
 using Eljur.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20210206154429_comments1")]
+    partial class comments1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,29 +34,6 @@ namespace Eljur.Migrations
                     b.HasIndex("EducationLevelsId");
 
                     b.ToTable("EducationDepartmentEducationLevel");
-                });
-
-            modelBuilder.Entity("Eljur.Context.Tables.Check", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int?>("SemesterId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Text")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SemesterId");
-
-                    b.ToTable("Checks");
                 });
 
             modelBuilder.Entity("Eljur.Context.Tables.Comment", b =>
@@ -178,14 +157,9 @@ namespace Eljur.Migrations
                     b.Property<int>("Number")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("SemesterId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
-
-                    b.HasIndex("SemesterId");
 
                     b.ToTable("Semesters");
                 });
@@ -622,15 +596,6 @@ namespace Eljur.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Eljur.Context.Tables.Check", b =>
-                {
-                    b.HasOne("Eljur.Context.Tables.Semester", "Semester")
-                        .WithMany("Checks")
-                        .HasForeignKey("SemesterId");
-
-                    b.Navigation("Semester");
-                });
-
             modelBuilder.Entity("Eljur.Context.Tables.Comment", b =>
                 {
                     b.HasOne("Eljur.Context.Tables.Semester", "Semester")
@@ -687,10 +652,6 @@ namespace Eljur.Migrations
                     b.HasOne("Eljur.Context.Tables.Group", "Group")
                         .WithMany("Semesters")
                         .HasForeignKey("GroupId");
-
-                    b.HasOne("Eljur.Context.Tables.Semester", null)
-                        .WithMany("Semesters")
-                        .HasForeignKey("SemesterId");
 
                     b.Navigation("Group");
                 });
@@ -903,13 +864,9 @@ namespace Eljur.Migrations
 
             modelBuilder.Entity("Eljur.Context.Tables.Semester", b =>
                 {
-                    b.Navigation("Checks");
-
                     b.Navigation("Comments");
 
                     b.Navigation("GroupVisits");
-
-                    b.Navigation("Semesters");
 
                     b.Navigation("SemesterStudents");
 
