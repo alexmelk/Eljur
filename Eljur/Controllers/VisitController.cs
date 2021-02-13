@@ -277,6 +277,8 @@ namespace Eljur.Controllers
         {
             bool firstSubject = true;
             var page = 8;
+            var subjectsModel = new List<SubjectsModel>();
+
             Stream stream = new FileStream(path: ".//file.xlsx", FileMode.Create);
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -288,7 +290,7 @@ namespace Eljur.Controllers
                     .Include(x => x.Students).ThenInclude(x => x.StudentVisits).ThenInclude(x => x.GroupVisit).ThenInclude(x => x.Subject)
                     .Include(x => x.Students).ThenInclude(x => x.StudentVisits).ThenInclude(x => x.GroupVisit).ThenInclude(x => x.Group)
                     .Include(x => x.Semesters).ThenInclude(x => x.GroupVisits).ThenInclude(x => x.ThemeVisits).ThenInclude(x => x.Theme)
-                    .Include(x => x.Semesters).ThenInclude(x => x.Subjects)
+                    .Include(x => x.Semesters).ThenInclude(x => x.Subjects).ThenInclude(x=>x.Teacher)
                     .Include(x => x.Semesters).ThenInclude(x => x.Comments)
                     .Include(x => x.Semesters).ThenInclude(x => x.Checks)
                     .Include(x => x.Specialization).ThenInclude(x => x.EducationDepartment)
@@ -305,69 +307,109 @@ namespace Eljur.Controllers
                     subjectsList.AddRange(group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().Subjects);
 
                 var subjects = allSubjects ? subjectsList : new List<Subject>() { model.Subject };
-
+                //посещения
                 foreach (var subject in subjects.OrderBy(x => x.Name).ThenBy(x => x.Semester.Number).ToList())
                 {
                     using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
                     {
-                        if (firstSubject) 
-                        {
-                            var minDate = subjectsList.Select(x=>x.Semester?.GroupVisits.Min(x=>x.Date)).FirstOrDefault();
-
-                            var firstVisit = minDate is null ? DateTime.Now.Year : minDate.Value.Year;
-                            //год начала
-                            var firstYear = package.Workbook.Names[$"_1_1_firstYear"];
-                            package.Workbook.Worksheets["Начало"].Cells[firstYear.Address].Value = firstVisit;
-
-                            //год окончания
-                            var secondYear = package.Workbook.Names[$"_1_1_secondYear"];
-                            package.Workbook.Worksheets["Начало"].Cells[secondYear.Address].Value = firstVisit + 1;
-
-                            //отделение
-                            var educationDepartment = package.Workbook.Names[$"_1_1_EducationDepartment"];
-                            package.Workbook.Worksheets["Начало"].Cells[educationDepartment.Address].Value = group.Specialization.EducationDepartment.Name;
-
-                            //название группы
-                            var groupName = package.Workbook.Names[$"_1_1_GroupName"];
-                            package.Workbook.Worksheets["Начало"].Cells[groupName.Address].Value = group.Name;
-
-                            //специализация
-                            var specialization = package.Workbook.Names[$"_1_1_Specializaton"];
-                            package.Workbook.Worksheets["Начало"].Cells[specialization.Address].Value = group.Specialization.Name;
-
-                            //страница 2
-                            var firstSemester  = group.Semesters.Where(x=>x.Number==model.Semester).FirstOrDefault().SemesterStudents.OrderBy(x => x.Student.FIO).ToList();
-                            
-                            var counter = 1;
-                            foreach(var semesterStudent in firstSemester)
-                            {
-                                var studentFio = package.Workbook.Names[$"_1_2_Student{counter}"];
-                                package.Workbook.Worksheets["Начало"].Cells[studentFio.Address].Value = semesterStudent.Student.FIO;
-
-                                if(allowAddNextSemester)
-                                {
-                                    var secondSemester = group.Semesters.Where(x => x.Number == model.Semester+1).FirstOrDefault().SemesterStudents.Where(x => x.Student.Id == semesterStudent.Student.Id).FirstOrDefault(); ;
-                                    var studentsMark = package.Workbook.Names[$"_1_2_OO{counter}"];
-
-                                    package.Workbook.Worksheets["Начало"].Cells[studentsMark.Address].Value = semesterStudent.SpecialyMark+" " +secondSemester.SpecialyMark;
-
-                                }
-                                else
-                                {
-                                    var studentsMark = package.Workbook.Names[$"_1_2_OO{counter}"];
-                                    package.Workbook.Worksheets["Начало"].Cells[studentsMark.Address].Value = semesterStudent.SpecialyMark;
-                                }
-
-                                counter++;
-                            }
-
-                            outputPakage.Workbook.Worksheets.Add("Начало", package.Workbook.Worksheets["Начало"]); firstSubject = false; 
-                        }
-
-                        GenerateVisits(students, model, package, group, subject, outputPakage, ref page);
+                        GenerateVisits(students, model, package, group, subject, outputPakage, ref page, subjectsModel);
                     }
                 }
 
+                //начало
+                using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
+                {
+
+                        var minDate = subjectsList.Select(x => x.Semester?.GroupVisits.Min(x => x.Date)).FirstOrDefault();
+
+                        var firstVisit = minDate is null ? DateTime.Now.Year : minDate.Value.Year;
+                        //год начала
+                        var firstYear = package.Workbook.Names[$"_1_1_firstYear"];
+                        package.Workbook.Worksheets["Начало"].Cells[firstYear.Address].Value = firstVisit;
+
+                        //год окончания
+                        var secondYear = package.Workbook.Names[$"_1_1_secondYear"];
+                        package.Workbook.Worksheets["Начало"].Cells[secondYear.Address].Value = firstVisit + 1;
+
+                        //отделение
+                        var educationDepartment = package.Workbook.Names[$"_1_1_EducationDepartment"];
+                        package.Workbook.Worksheets["Начало"].Cells[educationDepartment.Address].Value = group.Specialization.EducationDepartment.Name;
+
+                        //название группы
+                        var groupName = package.Workbook.Names[$"_1_1_GroupName"];
+                        package.Workbook.Worksheets["Начало"].Cells[groupName.Address].Value = group.Name;
+
+                        //специализация
+                        var specialization = package.Workbook.Names[$"_1_1_Specializaton"];
+                        package.Workbook.Worksheets["Начало"].Cells[specialization.Address].Value = group.Specialization.Name;
+
+                        //страница 2
+                        var firstSemester = group.Semesters.Where(x => x.Number == model.Semester).FirstOrDefault().SemesterStudents.OrderBy(x => x.Student.FIO).ToList();
+
+                        var counter = 1;
+                        foreach (var semesterStudent in firstSemester)
+                        {
+                            var studentFio = package.Workbook.Names[$"_1_2_Student{counter}"];
+                            package.Workbook.Worksheets["Начало"].Cells[studentFio.Address].Value = semesterStudent.Student.FIO;
+
+                            if (allowAddNextSemester)
+                            {
+                                var secondSemester = group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().SemesterStudents.Where(x => x.Student.Id == semesterStudent.Student.Id).FirstOrDefault(); ;
+                                var studentsMark = package.Workbook.Names[$"_1_2_OO{counter}"];
+
+                                package.Workbook.Worksheets["Начало"].Cells[studentsMark.Address].Value = semesterStudent.SpecialyMark + " " + secondSemester.SpecialyMark;
+
+                            }
+                            else
+                            {
+                                var studentsMark = package.Workbook.Names[$"_1_2_OO{counter}"];
+                                package.Workbook.Worksheets["Начало"].Cells[studentsMark.Address].Value = semesterStudent.SpecialyMark;
+                            }
+
+                            counter++;
+                        }
+
+                        //страница 3
+                        var subjectsForList3 = subjectsModel.GroupBy(x => x.Subject.Name);
+                        counter = 1;
+                        foreach (var subj in subjectsForList3)
+                        {
+                            var subjectName = package.Workbook.Names[$"_1_3_Subject{counter}"];
+                            package.Workbook.Worksheets["Начало"].Cells[subjectName.Address].Value = subj.First().Subject.Name;
+
+                            var trud = package.Workbook.Names[$"_1_3_Trud{counter}"];
+
+                            var time = 0.0;
+                            if (subj.Count() == 1)
+                            {
+                                time = subj.FirstOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
+                            }
+                            else
+                            {
+                                time = subj.FirstOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
+                                time += subj.LastOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
+                            }
+                            package.Workbook.Worksheets["Начало"].Cells[trud.Address].Value = time;
+
+
+                            var teacherName = package.Workbook.Names[$"_1_3_FIO{counter}"];
+                            package.Workbook.Worksheets["Начало"].Cells[teacherName.Address].Value = subj.First().Subject.Teacher.FIO;
+
+                            var str = package.Workbook.Names[$"_1_3_Str{counter}"];
+                            package.Workbook.Worksheets["Начало"].Cells[str.Address].Value = subj.First().Page + " - " + (subj.Last().Page + 1);
+
+
+                            counter++;
+                        }
+
+
+                        outputPakage.Workbook.Worksheets.Add("Начало", package.Workbook.Worksheets["Начало"]);
+                        outputPakage.Workbook.Worksheets.MoveToStart(outputPakage.Workbook.Worksheets["Начало"].Index);
+                        firstSubject = false;
+                    
+                }
+
+                //конец
                 using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
                 {
                     //Замечания преподавателей
@@ -491,7 +533,7 @@ namespace Eljur.Controllers
             package.Workbook.Worksheets["Посещаемость"].Cells[inValid.Address].Value = inValidHours;
 
         }
-        public void GenerateVisits(List<Student> students, ChoosePropertyVisit model, ExcelPackage package, Group group, Subject subject, ExcelPackage outputPakage, ref int page)
+        public void GenerateVisits(List<Student> students, ChoosePropertyVisit model, ExcelPackage package, Group group, Subject subject, ExcelPackage outputPakage, ref int page, List<SubjectsModel> subjectsModel)
         {
             //посещаемость студентов
             for (int i = 0; i < students.Count(); i++)
@@ -507,6 +549,7 @@ namespace Eljur.Controllers
             //название предмета
             var subjectName = package.Workbook.Names[$"SubjectName"];
             package.Workbook.Worksheets["Посещаемость"].Cells[subjectName.Address].Value = subject.Name;
+            subjectsModel.Add(new SubjectsModel() { Subject = subject, Page = page });
 
             //семестр
             var semesterNumberAdress = package.Workbook.Names["semesterNumber"];
