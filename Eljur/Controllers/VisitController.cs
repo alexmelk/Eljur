@@ -301,7 +301,9 @@ namespace Eljur.Controllers
 
                 var subjectsList = new List<Subject>();
                 subjectsList.AddRange(group.Semesters.Where(x=>x.Number==model.Semester).FirstOrDefault().Subjects);
-                var allowAddNextSemester = group.Semesters.Any(x => x.Number == model.Semester + 1);
+                var allowAddNextSemester = group.Semesters.Any(x => x.Number == model.Semester + 1)
+                    && (group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().Subjects.Count() != 0)
+                    && (group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().GroupVisits.Count() != 0);
 
                 if (allowAddNextSemester)
                     subjectsList.AddRange(group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().Subjects);
