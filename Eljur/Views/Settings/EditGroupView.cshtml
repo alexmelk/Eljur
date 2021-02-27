@@ -53,26 +53,6 @@
     </tbody>
 </table>
 <br />
-<hr />
-<h6 class="text-center">Прикрепить предмет</h6>
-<hr />
-<br />
-<div style="width: 300px; margin: auto;">
-    <form asp-controller="Settings" asp-action="EditGroup" method="get">
-        <input name="id" asp-for="@Model.Id" type="hidden" />
-        @{
-            var busySubjects = Model.Semesters.Select(x => x.Subjects);
-        }
-        <div class="form-group">
-            <label>Предмет</label>
-            <select class="form-control" name="subjectId" asp-items="@(new SelectList(_db.Subject.AsEnumerable().Where(x=>!busySubjects.Any(y=>y.Contains(x))).ToList(),"Id","Name"))"></select>
-        </div>
-        <div>
-            <button class="btn btn-primary" style="width:100%;">Прикрепить</button>
-        </div>
-    </form>
-</div>
-<br />
 <br />
 <hr />
 <h6 class="text-center">Список студентов</h6>

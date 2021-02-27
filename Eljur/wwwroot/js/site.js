@@ -15,4 +15,7 @@ window.onload = function () {
         dom: '<"datatable-header"l><"datatable-scroll"Bft><"datatable-footer"ip>',
         bSortCellsTop: true,//делаем сортировку по верхнему хеадеру
     });
+
+    $("input:not([type=hidden])").attr("maxlength", 40);
+    $("input:not([type=hidden])").attr("required", true);
 }
