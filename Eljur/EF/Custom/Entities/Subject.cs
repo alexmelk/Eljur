@@ -22,6 +22,7 @@ namespace Eljur.Context.Tables
 
         public GrafikForSr GrafikForSr { get; set; }
 
+        public List<DateTime> DateTaskDone { get; set; }
         public List<Theme> Themes { get; set; }
     }
 }

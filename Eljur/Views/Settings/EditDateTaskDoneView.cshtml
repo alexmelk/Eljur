@@ -1,0 +1,33 @@
+﻿@model DateTaskDoneModel
+@{
+    ViewData["Title"] = "Отметка о выполнении студентами контрольных мероприятий по см. работе";
+}
+<br />
+<h2 class="text-center text-muted  font-weight-light">Отметка о выполнении студентами контрольных мероприятий по см. работе</h2>
+<br />
+<br />
+
+<div id="app">
+    <form asp-controller="Settings" asp-action="EditDateTaskDone" style="margin: 0 auto; width:600px;">
+        <input asp-for="@Model.Subject.Id" type="hidden" />
+        <table class="table table-bordered">
+            <thead align="center">
+                <tr>
+                    <th>
+                        № п.п.
+                    </th>
+                    <th>Дата</th>
+                </tr>
+            <tbody>
+                @for (int i = 0; i < Model.DateTaskDone.Count(); i++)
+                {
+                    <tr>
+                        <td>@(i+1)</td>
+                        <td style="display:grid;"><input asp-for="@Model.DateTaskDone[i]" type="date" placeholder="Дата" /></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-primary">Сохранить</button>
+    </form>
+</div>

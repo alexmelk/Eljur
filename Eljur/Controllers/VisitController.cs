@@ -395,8 +395,10 @@ namespace Eljur.Controllers
                             time = subj.FirstOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
 
                             if(subject.GrafikForSr!=null)
-                            WriteSubjectGrafikSr(subject.GrafikForSr.indepWorkEnums, subject, time, package, 1, counter);
+                                WriteSubjectGrafikSr(subject.GrafikForSr.indepWorkEnums, subject, time, package, 1, counter);
 
+                            if (subject.DateTaskDone != null)
+                                WriteDateTaskDone(subject.DateTaskDone, subject, package, 1, counter);
                         }
                         else
                         {
@@ -411,6 +413,11 @@ namespace Eljur.Controllers
                             if (sSubject.GrafikForSr != null)
                                 WriteSubjectGrafikSr(sSubject.GrafikForSr.indepWorkEnums, sSubject, subj.LastOrDefault().Subject.Themes.Sum(x => x.AllowedHours), package, 2, counter);
 
+                            if (fSubject.DateTaskDone != null)
+                                WriteDateTaskDone(fSubject.DateTaskDone, fSubject, package, 1, counter);
+                            if (sSubject.DateTaskDone != null)
+                                WriteDateTaskDone(sSubject.DateTaskDone, sSubject, package, 2, counter);
+
                         }
                         package.Workbook.Worksheets["Начало"].Cells[trud.Address].Value = time;
 
@@ -423,7 +430,6 @@ namespace Eljur.Controllers
 
                         counter++;
                     }
-
 
                     outputPakage.Workbook.Worksheets.Add("Начало", package.Workbook.Worksheets["Начало"]);
                     outputPakage.Workbook.Worksheets.MoveToStart(outputPakage.Workbook.Worksheets["Начало"].Index);
@@ -510,6 +516,7 @@ namespace Eljur.Controllers
                 return File(stream, "application/xlsx", $"Журнал[{model.Group.Name}].xlsx");
             }
         }
+
         public void WriteSubjectGrafikSr(List<int> grafik, Subject subject, double time, ExcelPackage package, int listIndex, int counter)
         {
             var subjectName = package.Workbook.Names[$"_1_{((listIndex == 1) ? "4" : "5")}_Subject{counter}"];
@@ -549,6 +556,34 @@ namespace Eljur.Controllers
             }
             var res = package.Workbook.Names[$"_1_{((listIndex==1)?"4":"5")}_Res{counter}"];
             package.Workbook.Worksheets["Начало"].Cells[res.Address].Value = sr;
+        }
+
+        public void WriteDateTaskDone(List<DateTime> dateTaskDone, Subject subject, ExcelPackage package, int listIndex, int counter)
+        {
+            var subjectName = package.Workbook.Names[$"_1_{((listIndex == 1) ? "6" : "7")}_Subject{counter}"];
+            package.Workbook.Worksheets["Начало"].Cells[subjectName.Address].Value = subject.Name;
+
+            var list = new List<string>();
+            foreach (var el in dateTaskDone)
+            {
+                if (el != new DateTime())
+                {
+                    list.Add(el.ToString("dd.MM.yyyy"));
+                }
+                else
+                {
+                    list.Add("");
+                }
+            }
+
+            var mas = new object[30, 1];
+            for (int i = 0; i < list.Count(); i++)
+            {
+                mas[i, 0] = list[i];
+            }
+            var res = package.Workbook.Names[$"_1_{((listIndex == 1) ? "6" : "7")}_DateTaskDone{counter}"];
+            package.Workbook.Worksheets["Начало"].Cells[res.Address].Value = mas;
+
         }
 
         public void WriteStudentsVisits(List<StudentVisit> visits, ExcelPackage package, int index)

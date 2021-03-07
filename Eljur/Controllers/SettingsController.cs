@@ -733,5 +733,46 @@ namespace Eljur.Controllers
 
             return View("Index");
         }
+
+
+
+        public IActionResult ChooseGroupForDateTaskDone()
+        {
+            return View(new Semester());
+        }
+
+        [HttpPost]
+        public IActionResult ChooseGroupForDateTaskDone(Semester semester)
+        {
+            var list = _db.Semesters.Include(x => x.Subjects).Where(x => x.Id == semester.Id).FirstOrDefault().Subjects.ToList();
+            return View("ChooseSubjectForDateTaskDone", list);
+        }
+
+        [HttpPost]
+        public IActionResult ChooseSubjectForDateTaskDone(int subjectId)
+        {
+            if (subjectId == 0) return View("Index");
+
+            var subject = _db.Subject.Include(x=>x.Group).ThenInclude(x=>x.Students).Where(x => x.Id == subjectId).FirstOrDefault();
+
+            subject.DateTaskDone = subject.DateTaskDone ?? new List<DateTime>();
+
+            while (subject.DateTaskDone.Count() < subject.Group.Students.Count)
+            {
+                subject.DateTaskDone.Add(new DateTime());
+            }
+
+            _db.SaveChanges();
+            return View("EditDateTaskDoneView", new DateTaskDoneModel { DateTaskDone = subject.DateTaskDone, Subject = subject });
+        }
+
+        [HttpPost]
+        public IActionResult EditDateTaskDone(DateTaskDoneModel model)
+        {
+            _db.Subject.Find(model.Subject.Id).DateTaskDone = model.DateTaskDone;
+            _db.SaveChanges();
+
+            return View("Index");
+        }
     }
 }
