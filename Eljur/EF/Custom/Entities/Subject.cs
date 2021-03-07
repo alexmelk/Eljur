@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Eljur.EF.Custom.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -18,6 +19,8 @@ namespace Eljur.Context.Tables
 
         public AttestationEnum Attestation { get; set; }
         public double AttestationHours { get; set; }
+
+        public GrafikForSr GrafikForSr { get; set; }
 
         public List<Theme> Themes { get; set; }
     }

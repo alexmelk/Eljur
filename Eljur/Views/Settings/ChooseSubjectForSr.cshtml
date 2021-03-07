@@ -1,0 +1,22 @@
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@using Eljur.Context.Tables;
+@model List<Eljur.Context.Tables.Subject>;
+@{
+    ViewData["Title"] = "Выбор предмета";
+}
+<br />
+<h2 class="text-muted text-center font-weight-light" style="margin-top:0;">Выберите предмет</h2>
+<br />
+<br />
+<hr />
+<form asp-controller="Settings" asp-action="ChooseSubjectForSr">
+    <div style="margin:0 auto; width:300px;">
+        <select class="form-control" name="subjectId" asp-items="@(new SelectList(Model, "Id", "Name"))" required></select>
+        <br />
+        <div>
+            <button class="btn btn-primary" style="width:100%">Далее</button>
+        </div>
+    </div>
+</form>
+<hr />

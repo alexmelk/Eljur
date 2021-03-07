@@ -85,7 +85,7 @@ namespace Eljur.Controllers
             var themeVisits = new List<ThemeVisit>();
             foreach (var savedTheme in storage)
             {
-                var theme = _db.Theme.Include(x => x.ThemeGroup).Include(x=>x.Subject).ThenInclude(x=>x.Semester).Where(x => x.Id == savedTheme.ThemeId).FirstOrDefault();
+                var theme = _db.Theme.Include(x => x.ThemeGroup).Include(x => x.Subject).ThenInclude(x => x.Semester).Where(x => x.Id == savedTheme.ThemeId).FirstOrDefault();
 
                 theme.ThemeGroup.UsedHours = savedTheme.ThemeGroup.UsedHours;
                 var hoursPerVisit = savedTheme.Reserved;
@@ -101,7 +101,7 @@ namespace Eljur.Controllers
                 ThemeVisits = themeVisits,
                 Subject = _db.Subject.Find(model.SubjectId),
                 Group = _db.Group.Find(model.GroupId),
-                Semester = _db.Subject.Include(x=>x.Semester).Where(x=>x.Id==model.SubjectId).FirstOrDefault().Semester,
+                Semester = _db.Subject.Include(x => x.Semester).Where(x => x.Id == model.SubjectId).FirstOrDefault().Semester,
                 Theme = themeVisits.FirstOrDefault().Theme
             };
             _db.GroupVisit.Add(visit);
@@ -141,7 +141,7 @@ namespace Eljur.Controllers
                 .Include(x => x.Group)
                 .Include(x => x.ThemeVisits)
                 .ThenInclude(x => x.Theme)
-                .Where(x => x.Group.Id==model.Group.Id).ToList();
+                .Where(x => x.Group.Id == model.Group.Id).ToList();
 
             var output = new GroupVisitView()
             {
@@ -257,7 +257,7 @@ namespace Eljur.Controllers
 
             switch (action)
             {
-/*                case "create": { return GetExcel(model, allSubjects: false); }*/
+                case "create": { return GetExcel(model, allSubjects: false); }
                 case "edit": { return EditGroupVisit(model); }
                 case "create-for-group": { return GetExcel(model, allSubjects: true); }
             }
@@ -270,7 +270,14 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult GetExcel(ChoosePropertyVisit model, bool allSubjects)
         {
-            return GenerateExcel(model, allSubjects);
+            try
+            {
+                return GenerateExcel(model, allSubjects);
+            }
+            catch
+            {
+                return View("Index");
+            }
         }
 
         public FileResult GenerateExcel(ChoosePropertyVisit model, bool allSubjects)
@@ -287,20 +294,20 @@ namespace Eljur.Controllers
 
                 var group = _db.Group
                     .Include(x => x.Semesters).ThenInclude(x => x.SemesterStudents).ThenInclude(x => x.Student)
-                    .Include(x => x.Students).ThenInclude(x => x.StudentVisits).ThenInclude(x => x.GroupVisit).ThenInclude(x => x.Subject)
+                    .Include(x => x.Students).ThenInclude(x => x.StudentVisits).ThenInclude(x => x.GroupVisit).ThenInclude(x => x.Subject).ThenInclude(x=>x.GrafikForSr)
                     .Include(x => x.Students).ThenInclude(x => x.StudentVisits).ThenInclude(x => x.GroupVisit).ThenInclude(x => x.Group)
                     .Include(x => x.Semesters).ThenInclude(x => x.GroupVisits).ThenInclude(x => x.ThemeVisits).ThenInclude(x => x.Theme)
-                    .Include(x => x.Semesters).ThenInclude(x => x.Subjects).ThenInclude(x=>x.Teacher)
+                    .Include(x => x.Semesters).ThenInclude(x => x.Subjects).ThenInclude(x => x.Teacher)
                     .Include(x => x.Semesters).ThenInclude(x => x.Comments)
                     .Include(x => x.Semesters).ThenInclude(x => x.Checks)
                     .Include(x => x.Specialization).ThenInclude(x => x.EducationDepartment)
-                    
+
                     .Where(x => x.Id == model.Group.Id).FirstOrDefault();
 
                 var students = group.Students.OrderBy(x => x.FIO).ToList();
 
                 var subjectsList = new List<Subject>();
-                subjectsList.AddRange(group.Semesters.Where(x=>x.Number==model.Semester).FirstOrDefault().Subjects);
+                subjectsList.AddRange(group.Semesters.Where(x => x.Number == model.Semester).FirstOrDefault().Subjects);
                 var allowAddNextSemester = group.Semesters.Any(x => x.Number == model.Semester + 1)
                     && (group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().Subjects.Count() != 0)
                     && (group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().GroupVisits.Count() != 0);
@@ -322,93 +329,106 @@ namespace Eljur.Controllers
                 using (var package = new ExcelPackage(new FileInfo(".//template.xlsx")))
                 {
 
-                        var minDate = subjectsList.Select(x => x.Semester?.GroupVisits.Min(x => x.Date)).FirstOrDefault();
+                    var minDate = subjectsList.Select(x => x.Semester?.GroupVisits.Min(x => x.Date)).FirstOrDefault();
 
-                        var firstVisit = minDate is null ? DateTime.Now.Year : minDate.Value.Year;
-                        //год начала
-                        var firstYear = package.Workbook.Names[$"_1_1_firstYear"];
-                        package.Workbook.Worksheets["Начало"].Cells[firstYear.Address].Value = firstVisit;
+                    var firstVisit = minDate is null ? DateTime.Now.Year : minDate.Value.Year;
+                    //год начала
+                    var firstYear = package.Workbook.Names[$"_1_1_firstYear"];
+                    package.Workbook.Worksheets["Начало"].Cells[firstYear.Address].Value = firstVisit;
 
-                        //год окончания
-                        var secondYear = package.Workbook.Names[$"_1_1_secondYear"];
-                        package.Workbook.Worksheets["Начало"].Cells[secondYear.Address].Value = firstVisit + 1;
+                    //год окончания
+                    var secondYear = package.Workbook.Names[$"_1_1_secondYear"];
+                    package.Workbook.Worksheets["Начало"].Cells[secondYear.Address].Value = firstVisit + 1;
 
-                        //отделение
-                        var educationDepartment = package.Workbook.Names[$"_1_1_EducationDepartment"];
-                        package.Workbook.Worksheets["Начало"].Cells[educationDepartment.Address].Value = group.Specialization.EducationDepartment.Name;
+                    //отделение
+                    var educationDepartment = package.Workbook.Names[$"_1_1_EducationDepartment"];
+                    package.Workbook.Worksheets["Начало"].Cells[educationDepartment.Address].Value = group.Specialization.EducationDepartment.Name;
 
-                        //название группы
-                        var groupName = package.Workbook.Names[$"_1_1_GroupName"];
-                        package.Workbook.Worksheets["Начало"].Cells[groupName.Address].Value = group.Name;
+                    //название группы
+                    var groupName = package.Workbook.Names[$"_1_1_GroupName"];
+                    package.Workbook.Worksheets["Начало"].Cells[groupName.Address].Value = group.Name;
 
-                        //специализация
-                        var specialization = package.Workbook.Names[$"_1_1_Specializaton"];
-                        package.Workbook.Worksheets["Начало"].Cells[specialization.Address].Value = group.Specialization.Name;
+                    //специализация
+                    var specialization = package.Workbook.Names[$"_1_1_Specializaton"];
+                    package.Workbook.Worksheets["Начало"].Cells[specialization.Address].Value = group.Specialization.Name;
 
-                        //страница 2
-                        var firstSemester = group.Semesters.Where(x => x.Number == model.Semester).FirstOrDefault().SemesterStudents.OrderBy(x => x.Student.FIO).ToList();
+                    //страница 2
+                    var firstSemester = group.Semesters.Where(x => x.Number == model.Semester).FirstOrDefault().SemesterStudents.OrderBy(x => x.Student.FIO).ToList();
 
-                        var counter = 1;
-                        foreach (var semesterStudent in firstSemester)
+                    var counter = 1;
+                    foreach (var semesterStudent in firstSemester)
+                    {
+                        var studentFio = package.Workbook.Names[$"_1_2_Student{counter}"];
+                        package.Workbook.Worksheets["Начало"].Cells[studentFio.Address].Value = semesterStudent.Student.FIO;
+
+                        if (allowAddNextSemester)
                         {
-                            var studentFio = package.Workbook.Names[$"_1_2_Student{counter}"];
-                            package.Workbook.Worksheets["Начало"].Cells[studentFio.Address].Value = semesterStudent.Student.FIO;
+                            var secondSemester = group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().SemesterStudents.Where(x => x.Student.Id == semesterStudent.Student.Id).FirstOrDefault(); ;
+                            var studentsMark = package.Workbook.Names[$"_1_2_OO{counter}"];
 
-                            if (allowAddNextSemester)
-                            {
-                                var secondSemester = group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().SemesterStudents.Where(x => x.Student.Id == semesterStudent.Student.Id).FirstOrDefault(); ;
-                                var studentsMark = package.Workbook.Names[$"_1_2_OO{counter}"];
+                            package.Workbook.Worksheets["Начало"].Cells[studentsMark.Address].Value = semesterStudent.SpecialyMark + " " + secondSemester?.SpecialyMark;
 
-                                package.Workbook.Worksheets["Начало"].Cells[studentsMark.Address].Value = semesterStudent.SpecialyMark + " " + secondSemester.SpecialyMark;
-
-                            }
-                            else
-                            {
-                                var studentsMark = package.Workbook.Names[$"_1_2_OO{counter}"];
-                                package.Workbook.Worksheets["Начало"].Cells[studentsMark.Address].Value = semesterStudent.SpecialyMark;
-                            }
-
-                            counter++;
+                        }
+                        else
+                        {
+                            var studentsMark = package.Workbook.Names[$"_1_2_OO{counter}"];
+                            package.Workbook.Worksheets["Начало"].Cells[studentsMark.Address].Value = semesterStudent.SpecialyMark;
                         }
 
-                        //страница 3
-                        var subjectsForList3 = subjectsModel.GroupBy(x => x.Subject.Name);
-                        counter = 1;
-                        foreach (var subj in subjectsForList3)
+                        counter++;
+                    }
+
+                    //страница 3
+                    var subjectsForList3 = subjectsModel.GroupBy(x => x.Subject.Name);
+                    counter = 1;
+                    foreach (var subj in subjectsForList3)
+                    {
+                        var subjectName = package.Workbook.Names[$"_1_3_Subject{counter}"];
+                        package.Workbook.Worksheets["Начало"].Cells[subjectName.Address].Value = subj.FirstOrDefault().Subject.Name;
+
+                        var trud = package.Workbook.Names[$"_1_3_Trud{counter}"];
+
+                        var time = 0.0;
+                        if (subj.Count() == 1)
                         {
-                            var subjectName = package.Workbook.Names[$"_1_3_Subject{counter}"];
-                            package.Workbook.Worksheets["Начало"].Cells[subjectName.Address].Value = subj.First().Subject.Name;
+                            var subject = subj.FirstOrDefault().Subject;
+                            time = subj.FirstOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
 
-                            var trud = package.Workbook.Names[$"_1_3_Trud{counter}"];
+                            if(subject.GrafikForSr!=null)
+                            WriteSubjectGrafikSr(subject.GrafikForSr.indepWorkEnums, subject, time, package, 1, counter);
 
-                            var time = 0.0;
-                            if (subj.Count() == 1)
-                            {
-                                time = subj.FirstOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
-                            }
-                            else
-                            {
-                                time = subj.FirstOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
-                                time += subj.LastOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
-                            }
-                            package.Workbook.Worksheets["Начало"].Cells[trud.Address].Value = time;
-
-
-                            var teacherName = package.Workbook.Names[$"_1_3_FIO{counter}"];
-                            package.Workbook.Worksheets["Начало"].Cells[teacherName.Address].Value = subj.First().Subject.Teacher.FIO;
-
-                            var str = package.Workbook.Names[$"_1_3_Str{counter}"];
-                            package.Workbook.Worksheets["Начало"].Cells[str.Address].Value = subj.First().Page + " - " + (subj.Last().Page + 1);
-
-
-                            counter++;
                         }
+                        else
+                        {
+                            time = subj.FirstOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
+                            time += subj.LastOrDefault().Subject.Themes.Sum(x => x.AllowedHours);
+
+                            var fSubject = subj.FirstOrDefault().Subject;
+                            var sSubject = subj.LastOrDefault().Subject;
+
+                            if (fSubject.GrafikForSr != null)
+                                WriteSubjectGrafikSr(fSubject.GrafikForSr.indepWorkEnums, fSubject, subj.FirstOrDefault().Subject.Themes.Sum(x => x.AllowedHours), package, 1, counter);
+                            if (sSubject.GrafikForSr != null)
+                                WriteSubjectGrafikSr(sSubject.GrafikForSr.indepWorkEnums, sSubject, subj.LastOrDefault().Subject.Themes.Sum(x => x.AllowedHours), package, 2, counter);
+
+                        }
+                        package.Workbook.Worksheets["Начало"].Cells[trud.Address].Value = time;
 
 
-                        outputPakage.Workbook.Worksheets.Add("Начало", package.Workbook.Worksheets["Начало"]);
-                        outputPakage.Workbook.Worksheets.MoveToStart(outputPakage.Workbook.Worksheets["Начало"].Index);
-                        firstSubject = false;
-                    
+                        var teacherName = package.Workbook.Names[$"_1_3_FIO{counter}"];
+                        package.Workbook.Worksheets["Начало"].Cells[teacherName.Address].Value = subj.First().Subject.Teacher.FIO;
+
+                        var str = package.Workbook.Names[$"_1_3_Str{counter}"];
+                        package.Workbook.Worksheets["Начало"].Cells[str.Address].Value = subj.First().Page + " - " + (subj.Last().Page + 1);
+
+                        counter++;
+                    }
+
+
+                    outputPakage.Workbook.Worksheets.Add("Начало", package.Workbook.Worksheets["Начало"]);
+                    outputPakage.Workbook.Worksheets.MoveToStart(outputPakage.Workbook.Worksheets["Начало"].Index);
+                    firstSubject = false;
+
                 }
 
                 //конец
@@ -417,7 +437,7 @@ namespace Eljur.Controllers
                     //Замечания преподавателей
                     var commentsForFirstSem = group.Semesters.Where(x => x.Number == model.Semester).FirstOrDefault().Comments;
                     var counter = 1;
-                    foreach(var com in commentsForFirstSem)
+                    foreach (var com in commentsForFirstSem)
                     {
                         var teacherDescr = package.Workbook.Names[$"_3_1_TeacherDescr{counter}"];
                         package.Workbook.Worksheets["Конец"].Cells[teacherDescr.Address].Value = com.TeacherDescription;
@@ -432,7 +452,7 @@ namespace Eljur.Controllers
 
                     if (allowAddNextSemester)
                     {
-                        var commentsForSecondSem = group.Semesters.Where(x => x.Number == model.Semester+1).FirstOrDefault().Comments;
+                        var commentsForSecondSem = group.Semesters.Where(x => x.Number == model.Semester + 1).FirstOrDefault().Comments;
                         foreach (var com in commentsForSecondSem)
                         {
                             var teacherDescr = package.Workbook.Names[$"_3_2_TeacherDescr{counter}"];
@@ -490,10 +510,51 @@ namespace Eljur.Controllers
                 return File(stream, "application/xlsx", $"Журнал[{model.Group.Name}].xlsx");
             }
         }
+        public void WriteSubjectGrafikSr(List<int> grafik, Subject subject, double time, ExcelPackage package, int listIndex, int counter)
+        {
+            var subjectName = package.Workbook.Names[$"_1_{((listIndex == 1) ? "4" : "5")}_Subject{counter}"];
+            package.Workbook.Worksheets["Начало"].Cells[subjectName.Address].Value = subject.Name;
+            var hours = package.Workbook.Names[$"_1_{((listIndex == 1) ? "4" : "5")}_Hours{counter}"];
+            package.Workbook.Worksheets["Начало"].Cells[hours.Address].Value = time + subject.AttestationHours;
+
+            var zach = package.Workbook.Names[$"_1_{((listIndex == 1) ? "4" : "5")}_Zach{counter}"];
+            var exam = package.Workbook.Names[$"_1_{((listIndex == 1) ? "4" : "5")}_Ekz{counter}"];
+            if (subject.Attestation == AttestationEnum.DifferentialAttestation)
+            {
+                package.Workbook.Worksheets["Начало"].Cells[zach.Address].Value = subject.AttestationHours;
+                package.Workbook.Worksheets["Начало"].Cells[exam.Address].Value = 0;
+            }
+            else
+            {
+                package.Workbook.Worksheets["Начало"].Cells[zach.Address].Value = 0;
+                package.Workbook.Worksheets["Начало"].Cells[exam.Address].Value = subject.AttestationHours;
+            }
+
+            var list = new List<string>();
+            foreach (var el in grafik)
+            {
+                if (el != 0)
+                {
+                    list.Add(((IndepWorkEnumRus)el).ToString());
+                }
+                else
+                {
+                    list.Add("");
+                }
+            }
+            var sr = new object[1, 18];
+            for (int i = 0; i < list.Count(); i++)
+            {
+                sr[0, i] = list[i];
+            }
+            var res = package.Workbook.Names[$"_1_{((listIndex==1)?"4":"5")}_Res{counter}"];
+            package.Workbook.Worksheets["Начало"].Cells[res.Address].Value = sr;
+        }
+
         public void WriteStudentsVisits(List<StudentVisit> visits, ExcelPackage package, int index)
         {
-            int validHours = 0;
-            int inValidHours = 0;
+            double validHours = 0;
+            double inValidHours = 0;
             var list = new List<string>();
 
             foreach (var visit in visits)
@@ -503,13 +564,14 @@ namespace Eljur.Controllers
                     case TypeVisitEnum.Absent:
                         {
                             list.Add("НБ");
-                            inValidHours += 2;
+                            //visit.Theme.ThemeGroup.UsedHours;
+                            inValidHours += visit.GroupVisit.ThemeVisits.Sum(x=>x.HoursPerVisit);
                             break;
                         }
                     case TypeVisitEnum.ValidAbsent:
                         {
                             list.Add("Б");
-                            validHours += 2;
+                            validHours += visit.GroupVisit.ThemeVisits.Sum(x => x.HoursPerVisit);
                             break;
                         }
                     case TypeVisitEnum.Present:
@@ -813,8 +875,8 @@ namespace Eljur.Controllers
             var visits = _db.GroupVisit
                 .Include(x => x.StudentVisits)
                 .ThenInclude(x => x.Student)
-                .Include(x=>x.StudentVisits)
-                .ThenInclude(x=>x.Subject)
+                .Include(x => x.StudentVisits)
+                .ThenInclude(x => x.Subject)
                 .Include(x => x.Subject)
                 .Include(x => x.Group)
                 .Include(x => x.ThemeVisits)
@@ -833,7 +895,7 @@ namespace Eljur.Controllers
             {
                 visits = visits.Where(x => (x.Date >= model.Filter.From) && (x.Date <= model.Filter.Before)).ToList();
 
-/*                visits = visits.Where(x => x.Group.Students.Any(y => y.FIO.ToLower().Contains(model.Filter.LastName.ToLower()))).ToList();*/
+                visits = visits.Where(x => x.Group.Students.Any(y => y.FIO.ToLower().Contains(model.Filter.LastName.ToLower()))).ToList();
             }
             var output = new GroupVisitView()
             {

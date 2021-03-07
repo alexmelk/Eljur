@@ -1,0 +1,42 @@
+﻿@model Eljur.EF.Custom.Entities.GrafikForSr
+@using Eljur.Context.Tables;
+@{
+    ViewData["Title"] = "Редактирование графика контрольных мероприятий";
+}
+<br />
+
+<h2 class="text-center text-muted  font-weight-light">Редактирование контрольных мероприятий</h2>
+<br />
+<br />
+
+<div id="app">
+    <form asp-controller="Settings" asp-action="EditSr" style="margin: 0 auto; width:900px;">
+        <input asp-for="@Model.Id" value="@Model.Id" type="hidden" />
+        <input asp-for="@Model.Subject.Id" value="@Model.Subject.Id" type="hidden" />
+        <table class="table table-bordered">
+            <thead align="center">
+                <tr>
+                    <th>
+                        Номер учебной недели
+                    </th>
+                    <th>
+                        Тип см. раб.
+                    </th>
+                </tr>
+            <tbody>
+                @for (int i = 0; i < Model.indepWorkEnums.Count(); i++)
+                {
+                    <tr>
+                        <td style="text-align:center;">
+                            @(i+1)
+                        </td>
+                        <td>
+                            <select class="form-control" asp-for="@Model.indepWorkEnums[i]" asp-items="@Html.GetEnumSelectList(typeof(Eljur.Context.Tables.IndepWorkEnumRus))"></select>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-primary">Сохранить</button>
+    </form>
+</div>

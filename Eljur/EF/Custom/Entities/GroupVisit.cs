@@ -15,7 +15,6 @@ namespace Eljur.Context.Tables
         public Group Group { get; set; }
         [Required]
         public Subject Subject { get; set; }
-
         [Required]
         public Semester Semester { get; set; }
         [Required]

@@ -35,5 +35,6 @@ namespace Eljur.Context
         public DbSet<SemesterStudent> SemesterStudents { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Check> Checks { get; set; }
+        public DbSet<GrafikForSr> GrafikForSrs { get; set; }
     }
 }

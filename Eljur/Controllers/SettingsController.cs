@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Eljur.Models;
+using Eljur.EF.Custom.Entities;
 
 namespace Eljur.Controllers
 {
@@ -693,6 +694,44 @@ namespace Eljur.Controllers
             var model = new AdminViewModel() { Users = users.ToList() };
 
             return View(model);
+        }
+
+        public IActionResult ChooseGroupForSr()
+        {
+            return View(new Semester());
+        }
+
+        [HttpPost]
+        public IActionResult ChooseGroupForSr(Semester semester)
+        {
+            var list = _db.Semesters.Include(x => x.Subjects).Where(x => x.Id == semester.Id).FirstOrDefault().Subjects.ToList();
+            return View("ChooseSubjectForSr", list);
+        }
+        [HttpPost]
+        public IActionResult ChooseSubjectForSr(int subjectId)
+        {
+            if (subjectId == 0) return View("Index");
+
+            var subject  = _db.Subject.Include(x => x.GrafikForSr).Where(x => x.Id == subjectId).FirstOrDefault();
+
+            subject.GrafikForSr = subject.GrafikForSr ?? new EF.Custom.Entities.GrafikForSr { indepWorkEnums = new List<int>(), Subject = subject };
+
+            while (subject.GrafikForSr.indepWorkEnums.Count()<18)
+            {
+                subject.GrafikForSr.indepWorkEnums.Add((int)IndepWorkEnumRus.нет);
+            }
+            subject.GrafikForSr.Subject = subject;
+            _db.SaveChanges();
+            return View("EditSrView", subject.GrafikForSr);
+        }
+        
+        [HttpPost]
+        public IActionResult EditSr(GrafikForSr grafik)
+        {
+            _db.GrafikForSrs.Find(grafik.Id).indepWorkEnums = grafik.indepWorkEnums;
+            _db.SaveChanges();
+
+            return View("Index");
         }
     }
 }

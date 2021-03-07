@@ -1,0 +1,25 @@
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model Eljur.Context.Tables.Semester
+@{
+    ViewData["Title"] = "Выбор группы";
+}
+<br />
+<h2 class="text-muted text-center font-weight-light" style="margin-top:0;">Выберите группу</h2>
+<br />
+<br />
+<hr />
+<form asp-controller="Settings" asp-action="ChooseGroupForSr">
+    @{
+        var list = _db.Semesters.Include(x => x.Group)
+              .Select(x => new { Id = x.Id, Name = x.Group.Name + "(Семестр №" + x.Number + ")" }).ToList();
+    }
+    <div style="margin:0 auto; width:300px;">
+        <select class="form-control" asp-for="@Model.Id" asp-items="@(new SelectList(list, "Id", "Name"))" required></select>
+        <br />
+        <div>
+            <button class="btn btn-primary" style="width:100%">Далее</button>
+        </div>
+    </div>
+</form>
+<hr />
