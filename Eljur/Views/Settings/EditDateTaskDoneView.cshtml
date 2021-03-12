@@ -1,4 +1,6 @@
-﻿@model DateTaskDoneModel
+﻿@inject Eljur.Context.dbContext _db
+@using Microsoft.EntityFrameworkCore;
+@model DateTaskDoneModel
 @{
     ViewData["Title"] = "Отметка о выполнении студентами контрольных мероприятий по см. работе";
 }
@@ -13,16 +15,21 @@
         <table class="table table-bordered">
             <thead align="center">
                 <tr>
-                    <th>
-                        № п.п.
-                    </th>
+                    <th>Студент</th>
                     <th>Дата</th>
                 </tr>
             <tbody>
+                @{ 
+                   var students =  _db.Subject
+                        .Include(x => x.Group).ThenInclude(x => x.Students)
+                        .Where(x => x.Id == Model.Subject.Id).FirstOrDefault()
+                        .Group.Students.OrderBy(x => x.FIO).ToList();
+                } 
+
                 @for (int i = 0; i < Model.DateTaskDone.Count(); i++)
                 {
                     <tr>
-                        <td>@(i+1)</td>
+                        <td>@(students[i].FIO)</td>
                         <td style="display:grid;"><input asp-for="@Model.DateTaskDone[i]" type="date" placeholder="Дата" /></td>
                     </tr>
                 }

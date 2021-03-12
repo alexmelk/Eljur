@@ -17,5 +17,5 @@ window.onload = function () {
     });
 
     $("input:not([type=hidden])").attr("maxlength", 40);
-    $("input:not([type=hidden])").attr("required", true);
+    //$("input:not([type=hidden])").attr("required", true);
 }

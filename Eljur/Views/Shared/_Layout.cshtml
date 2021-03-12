@@ -99,21 +99,17 @@
                     }
                     @if (User.IsInRole("dekanat"))
                     {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Настройки</a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-action="ChooseGroupForSpecialyMark" asp-controller="Dekanat">Особые отметки<span class="sr-only">(current)</span></a>
-                                <a class="dropdown-item" asp-action="ChooseGroupForCheck" asp-controller="Dekanat">Контроль<span class="sr-only">(current)</span></a>
-                            </div>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-action="ChooseGroupForSpecialyMark" asp-controller="Dekanat">Особые отметки<span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-action="ChooseGroupForCheck" asp-controller="Dekanat">Контроль<span class="sr-only">(current)</span></a>
                         </li>
                     }
                     @if (User.IsInRole("dekan"))
                     {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Настройки</a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-action="ChooseGroupForComments" asp-controller="Shared">Принятые решения<span class="sr-only">(current)</span></a>
-                            </div>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-action="ChooseGroupForComments" asp-controller="Shared">Принятые решения<span class="sr-only">(current)</span></a>
                         </li>
                     }
                 </ul>
