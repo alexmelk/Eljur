@@ -270,14 +270,7 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult GetExcel(ChoosePropertyVisit model, bool allSubjects)
         {
-            try
-            {
-                return GenerateExcel(model, allSubjects);
-            }
-            catch
-            {
-                return View("Index");
-            }
+           return GenerateExcel(model, allSubjects);
         }
 
         public FileResult GenerateExcel(ChoosePropertyVisit model, bool allSubjects)
