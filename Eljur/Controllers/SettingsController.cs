@@ -296,6 +296,22 @@ namespace Eljur.Controllers
             return RedirectToAction("SemestersView");
         }
 
+        public IActionResult RemoveSemester(int id)
+        {
+            var sem = _db.Semesters
+                .Include(x=>x.Checks)
+                .Include(x=>x.Comments)
+                .Include(x => x.Group)
+                .ThenInclude(x => x.Specialization)
+                .ThenInclude(x => x.EducationDepartment)
+                .ThenInclude(x => x.EducationLevels)
+                .Include(x => x.Subjects).Where(x => x.Id == id).FirstOrDefault();
+            var k = _db.Semesters.Remove(sem);
+            _db.SaveChanges();
+
+            return RedirectToAction("SemestersView");
+        }
+
         /// <summary>
         /// Преподаватели
         /// </summary>
