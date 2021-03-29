@@ -16,5 +16,6 @@ namespace Eljur.Context.Tables
         public string TeacherDescription { get; set; }
         [Required]
         public Semester Semester { get; set; }
+        public int SemesterId { get; set; }
     }
 }

@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using Eljur.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Eljur.Migrations
 {
     [DbContext(typeof(dbContext))]
-    partial class dbContextModelSnapshot : ModelSnapshot
+    [Migration("20210329180411_fix11")]
+    partial class fix11
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -287,7 +289,7 @@ namespace Eljur.Migrations
                     b.Property<List<DateTime>>("DateTaskDone")
                         .HasColumnType("timestamp without time zone[]");
 
-                    b.Property<int?>("GrafikForSrId")
+                    b.Property<int>("GrafikForSrId")
                         .HasColumnType("integer");
 
                     b.Property<int>("GroupId")
@@ -802,7 +804,9 @@ namespace Eljur.Migrations
                 {
                     b.HasOne("Eljur.EF.Custom.Entities.GrafikForSr", "GrafikForSr")
                         .WithMany()
-                        .HasForeignKey("GrafikForSrId");
+                        .HasForeignKey("GrafikForSrId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Eljur.Context.Tables.Group", "Group")
                         .WithMany()

@@ -13,16 +13,20 @@ namespace Eljur.Context.Tables
         public DateTime Date { get; set; }
         [Required]
         public Group Group { get; set; }
+        public int GroupId { get; set; }
         [Required]
         public Subject Subject { get; set; }
+        public int SubjectId { get; set; }
         [Required]
         public Semester Semester { get; set; }
+        public int SemesterId { get; set; }
         [Required]
         public List<ThemeVisit> ThemeVisits { get; set; }
         [Required]
         public List<StudentVisit> StudentVisits { get; set; }
         [Required]
         public Theme Theme { get; set; }
+        public int ThemeId { get; set; }
 
     }
 }

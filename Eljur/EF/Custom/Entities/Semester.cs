@@ -10,6 +10,7 @@ namespace Eljur.Context.Tables
         public int Number { get; set; }
 
         public Group Group { get; set; }
+        public int GroupId { get; set; }
         public List<Subject> Subjects { get; set; }
         public List<GroupVisit> GroupVisits { get; set; }
         public List<SemesterStudent> SemesterStudents { get; set; }

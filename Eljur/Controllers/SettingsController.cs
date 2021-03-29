@@ -217,7 +217,7 @@ namespace Eljur.Controllers
         }
         public IActionResult RemoveSpecialization(int id)
         {
-            var model = _db.Specializations.Find(id);
+            var model = _db.Specializations.Include(x => x.Groups).Where(x => x.Id == id).FirstOrDefault();
             _db.Specializations.Remove(model);
             _db.SaveChanges();
             return RedirectToAction("SpecializationsView");

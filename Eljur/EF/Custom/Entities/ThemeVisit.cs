@@ -15,8 +15,10 @@ namespace Eljur.Context.Tables
 
         [Required]
         public Theme Theme { get; set; }
+        public int ThemeId { get; set; }
 
         [Required]
         public GroupVisit GroupVisit { get; set; }
+        public int GroupVisitId { get; set; }
     }
 }

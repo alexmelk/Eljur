@@ -11,12 +11,16 @@ namespace Eljur.Context.Tables
         public int Id { get; set; }
 
         public Student Student { get; set; }
+        public int StudentId { get; set; }
         [Required]
         public GroupVisit GroupVisit { get; set; }
+        public int GroupVisitId { get; set; }
         [Required]
         public Subject Subject { get; set; }
+        public int SubjectId { get; set; }
         [Required]
         public Theme Theme { get; set; }
+        public int ThemeId { get; set; }
         public TypeVisitEnum TypeVisit { get; set; }
     }
 }

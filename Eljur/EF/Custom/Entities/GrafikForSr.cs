@@ -17,5 +17,6 @@ namespace Eljur.EF.Custom.Entities
 
         [Required]
         public Subject Subject;
+        public int SubjectId;
      }
 }

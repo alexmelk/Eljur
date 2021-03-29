@@ -10,5 +10,6 @@ namespace Eljur.Context.Tables
 
         public double UsedHours { get; set; }
         public Theme Theme { get; set; }
+        public int ThemeId { get; set; }
     }
 }

@@ -11,8 +11,9 @@ namespace Eljur.Context.Tables
         public string Name { get; set; }
         
         public EducationDepartment EducationDepartment { get; set; }
+        public int EducationDepartmentId { get; set; }
         public EducationLevel EducationLevel { get; set; }
-
+        public int EducationLevelId { get; set; }
         public List<Group> Groups { get; set; }
     }
 }
