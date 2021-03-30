@@ -154,10 +154,7 @@ namespace Eljur.Controllers
         }
         public IActionResult RemoveEducationLevels(int id)
         {
-            var model = _db.EducationLevels
-                .Include(x => x.EducationDepartments)
-                .Where(x => x.Id == id)
-                .FirstOrDefault();
+            var model = _db.EducationLevels.Find(id);
 
             _db.EducationLevels.Remove(model);
             _db.SaveChanges();
@@ -186,7 +183,6 @@ namespace Eljur.Controllers
         {
             if (id == 0)
             {
-
                 var educLevels = _db.EducationLevels
                     .Include(x => x.EducationDepartments)
                     .Where(x => x.Id == educationLevelId)
@@ -383,7 +379,7 @@ namespace Eljur.Controllers
         /// <param name="subjectId"></param>
         /// <returns></returns>
         //group
-        public IActionResult EditGroup(int? id, string name, int? subjectId)
+        public IActionResult EditGroup(int? id, string name, int? subjectId, int specializationId)
         {
             var find = _db.Group
                 .Include(x => x.Semesters)
@@ -394,7 +390,7 @@ namespace Eljur.Controllers
 
             if (find == null) //если нет, то добавляем
             {
-                _db.Group.Add(new Group() { Name = name });
+                _db.Group.Add(new Group() { Name = name, SpecializationId = specializationId });
                 _db.SaveChanges();
             }
             else

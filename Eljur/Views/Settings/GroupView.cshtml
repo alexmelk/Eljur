@@ -48,6 +48,10 @@
             <label>Название группы</label>
             <input name="name" class="form-control" placeholder="ИВТ-20" />
         </div>
+        <div class="form-group">
+            <label>Cпециализация</label>
+            <select class="form-control" name="specializationId" asp-items="@(new SelectList(_db.Specializations,"Id","Name"))"></select>
+        </div>
         <div>
             <button class="btn btn-primary" style="width:100%;">Добавить</button>
         </div>
