@@ -10,6 +10,6 @@ namespace Eljur.Context.Tables
         public int Id { get; set; }
         public string FIO { get; set; }
 
-        public List<Subject> Subjects { get; set; }
+        public virtual List<Subject> Subjects { get; set; }
     }
 }

@@ -12,10 +12,10 @@ namespace Eljur.Context.Tables
 
         public string FIO { get; set; }
         [Required]
-        public Group Group { get; set; }
+        public virtual Group Group { get; set; }
         public int GroupId { get; set; }
 
-        public List<StudentVisit> StudentVisits { get; set; }
+        public virtual List<StudentVisit> StudentVisits { get; set; }
 
     }
 }

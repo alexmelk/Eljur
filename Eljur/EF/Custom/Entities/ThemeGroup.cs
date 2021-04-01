@@ -9,7 +9,7 @@ namespace Eljur.Context.Tables
         public int Id { get; set; }
 
         public double UsedHours { get; set; }
-        public Theme Theme { get; set; }
+        public virtual Theme Theme { get; set; }
         public int ThemeId { get; set; }
     }
 }

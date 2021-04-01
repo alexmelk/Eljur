@@ -6,9 +6,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="MigrationsOld\**" />
+    <Content Remove="MigrationsOld\**" />
+    <EmbeddedResource Remove="MigrationsOld\**" />
+    <None Remove="MigrationsOld\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="MigrationsOld\dbContextModelSnapshot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="EPPlus" Version="5.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.2">
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

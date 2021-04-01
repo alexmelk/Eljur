@@ -28,7 +28,7 @@ namespace Eljur
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<dbContext>(options =>
-                           options.UseNpgsql(Configuration.GetConnectionString("dbConnectingString")));
+                           options.UseLazyLoadingProxies().UseNpgsql(Configuration.GetConnectionString("dbConnectingString")));
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<dbContext>();
 
             services.AddDistributedMemoryCache();

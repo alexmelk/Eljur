@@ -15,14 +15,14 @@ namespace Eljur.Context.Tables
 
         public TypeSubjectEnum Type { get; set; }
         [Required]
-        public Subject Subject { get; set; }
+        public virtual Subject Subject { get; set; }
         public int SubjectId { get; set; }
 
-        public ThemeGroup ThemeGroup { get; set; }
+        public virtual ThemeGroup ThemeGroup { get; set; }
         public int ThemeGroupId { get; set; }
 
-        public List<ThemeVisit> ThemeVisits { get; set; }
-        public List<StudentVisit> StudentVisits { get; set; }
-        public List<GroupVisit> GroupVisits { get; set; }
+        public virtual List<ThemeVisit> ThemeVisits { get; set; }
+        public virtual List<StudentVisit> StudentVisits { get; set; }
+        public virtual List<GroupVisit> GroupVisits { get; set; }
     }
 }

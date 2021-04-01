@@ -12,10 +12,10 @@ namespace Eljur.EF.Custom.Entities
         public int Id { get; set; }
 
         [Required]
-        public Student Student { get; set; }
+        public virtual Student Student { get; set; }
         public int StudentId { get; set; }
         [Required]
-        public Semester Semester { get; set; }
+        public virtual Semester Semester { get; set; }
         public int SemesterId{get;set;}
         public string SpecialyMark { get; set; }
 

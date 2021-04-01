@@ -13,11 +13,11 @@ namespace Eljur.Context.Tables
         public string Name { get; set; }
 
         [Required]
-        public Specialization Specialization { get; set; }
+        public virtual Specialization Specialization { get; set; }
         public int SpecializationId { get; set; }
 
-        public List<Student> Students { get; set; }
-        public List<Semester> Semesters { get; set; }
+        public virtual List<Student> Students { get; set; }
+        public virtual List<Semester> Semesters { get; set; }
     }
 }
     

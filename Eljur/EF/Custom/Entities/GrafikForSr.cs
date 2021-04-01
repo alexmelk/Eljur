@@ -13,10 +13,10 @@ namespace Eljur.EF.Custom.Entities
     public class GrafikForSr
     {
         public int Id { get; set; }
-        public List<int> indepWorkEnums { get; set; }
+        public virtual List<int> indepWorkEnums { get; set; }
 
         [Required]
-        public Subject Subject;
+        public virtual Subject Subject { get; set; }
         public int SubjectId;
      }
 }

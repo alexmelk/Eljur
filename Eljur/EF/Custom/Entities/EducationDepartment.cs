@@ -13,7 +13,7 @@ namespace Eljur.Context.Tables
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public List<EducationLevel> EducationLevels { get; set; }
-        public List<Specialization> Specializations { get; set; }
+        public virtual List<EducationLevel> EducationLevels { get; set; }
+        public virtual List<Specialization> Specializations { get; set; }
     }
 }

@@ -21,6 +21,7 @@ namespace Eljur.Controllers
         {
             _db = db;
         }
+
         /// <summary>
         /// Главная страница контроллера settings
         /// </summary>
@@ -29,6 +30,7 @@ namespace Eljur.Controllers
         {
             return View();
         }
+
         /// <summary>
         /// Посещаемость
         /// </summary>
@@ -38,6 +40,7 @@ namespace Eljur.Controllers
         {
             return View(new ChoosePropertyVisit());
         }
+
         /// <summary>
         /// Группы
         /// </summary>
@@ -55,6 +58,7 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         /// <summary>
         /// Редактирование группы
         /// </summary>
@@ -75,6 +79,7 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         /// <summary>
         /// Студенты
         /// </summary>
@@ -87,6 +92,7 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         /// <summary>
         /// Редактирование студентов
         /// </summary>
@@ -97,6 +103,7 @@ namespace Eljur.Controllers
             var model = _db.Student.Include(x => x.Group).Where(x => x.Id == id).FirstOrDefault();
             return View(model);
         }
+
         /// <summary>
         /// Предметы
         /// </summary>
@@ -106,6 +113,7 @@ namespace Eljur.Controllers
             var model = _db.Subject.Include(a => a.Themes).Include(x => x.Teacher).ToList();
             return View(model);
         }
+
         /// <summary>
         /// Темы занятий
         /// </summary>
@@ -121,6 +129,7 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+        
         /// <summary>
         /// Уровень образования(бакалавриат, специалитет...)
         /// </summary>
@@ -133,6 +142,7 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         [HttpPost]
         public IActionResult EditEducationLevels(int? id, string name)
         {
@@ -141,25 +151,29 @@ namespace Eljur.Controllers
                 var model = new EducationLevel() { Name = name };
                 _db.EducationLevels.Add(model);
                 _db.SaveChanges();
-
             }
             else
             {
                 var model = _db.EducationLevels.Find(id);
                 model.Name = name;
                 _db.SaveChanges();
-
             }
+
             return RedirectToAction("EducationLevelsView");
         }
+
         public IActionResult RemoveEducationLevels(int id)
         {
             var model = _db.EducationLevels.Find(id);
-
+            
+            model.EducationDepartments.Clear();
             _db.EducationLevels.Remove(model);
+
             _db.SaveChanges();
+
             return RedirectToAction("EducationLevelsView");
         }
+
         /// <summary>
         /// Отделения(очное, заочное)
         /// </summary>
@@ -172,13 +186,16 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         public IActionResult RemoveEducationDepartment(int id)
         {
             var model = _db.EducationDepartments.Find(id);
+            model.Specializations.Clear();
             _db.EducationDepartments.Remove(model);
             _db.SaveChanges();
             return RedirectToAction("EducationDepartmentsView");
         }
+
         public IActionResult EditEducationDepartment(int id, int educationLevelId, string name)
         {
             if (id == 0)
@@ -199,6 +216,7 @@ namespace Eljur.Controllers
             }
             return RedirectToAction("EducationDepartmentsView");
         }
+
         /// <summary>
         /// Специализации
         /// </summary>
@@ -211,13 +229,17 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         public IActionResult RemoveSpecialization(int id)
         {
-            var model = _db.Specializations.Include(x => x.Groups).Where(x => x.Id == id).FirstOrDefault();
-            _db.Specializations.Remove(model);
+            var model = _db.Specializations.Find(id);
+            model.Groups.Clear();
+            //var groups = model.Groups[0].Semesters;
+            _db.Remove(model);
             _db.SaveChanges();
             return RedirectToAction("SpecializationsView");
         }
+
         public IActionResult EditSpecialization(int id, string departAndLevel, string name)
         {
             if (id == 0)
@@ -243,6 +265,7 @@ namespace Eljur.Controllers
             }
             return RedirectToAction("SpecializationsView");
         }
+
         public IActionResult EditGroupSpecialization(int id, int specializationId)
         {
             var spec = _db.Specializations
@@ -264,6 +287,7 @@ namespace Eljur.Controllers
 
             return View("EditGroupView", m);
         }
+
         /// <summary>
         /// Семестры
         /// </summary>
@@ -280,6 +304,7 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         public IActionResult EditSemester(int groupId, int semesterNumber)
         {
             var group = _db.Group.Include(x => x.Semesters).Where(x => x.Id == groupId).FirstOrDefault();
@@ -320,6 +345,7 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         public IActionResult RemoveTeacher(int id)
         {
             var model = _db.Teachers.Find(id);
@@ -327,6 +353,7 @@ namespace Eljur.Controllers
             _db.SaveChanges();
             return RedirectToAction("TeachersView");
         }
+
         [HttpPost]
         public IActionResult EditTeacher(int? id, string name)
         {
@@ -346,6 +373,7 @@ namespace Eljur.Controllers
             }
             return RedirectToAction("TeachersView");
         }
+
         /// <summary>
         /// Редактирование тем занятий
         /// </summary>
@@ -361,6 +389,7 @@ namespace Eljur.Controllers
 
             return View(model);
         }
+
         /// <summary>
         /// Добавить посещение
         /// </summary>
@@ -371,6 +400,7 @@ namespace Eljur.Controllers
         {
             return RedirectToAction("VisitView", new ChoosePropertyVisit());
         }
+
         /// <summary>
         /// Редактировать или создать группу
         /// </summary>
@@ -431,6 +461,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("GroupView", model);
         }
+
         /// <summary>
         /// Удалить группу
         /// </summary>
@@ -438,30 +469,16 @@ namespace Eljur.Controllers
         /// <returns></returns>
         public IActionResult RemoveGroup(int id)
         {
-            var group = _db.Group
-                .Include(x => x.Students)
-                .ThenInclude(x => x.StudentVisits)
-                .Include(x => x.Semesters)
-                .ThenInclude(x => x.GroupVisits)
-                .Include(x => x.Semesters)
-                .ThenInclude(x => x.Subjects)
-                .Where(x => x.Id == id)
-                .FirstOrDefault();
+            var group = _db.Group.Find(id);
 
-            _db.Group.Remove(group);
+            _db.Remove(group);
             _db.SaveChanges();
 
-            var model = _db.Group
-               .Include(x=>x.Specialization)
-               .Include(x => x.Students)
-               .Include(x=>x.Semesters)
-               .ThenInclude(x=>x.GroupVisits)
-               .Include(x=>x.Semesters)
-               .ThenInclude(x=>x.Subjects)
-               .ToList();
+            var model = _db.Group.ToList();
 
             return RedirectToAction("GroupView", model);
         }
+
         /// <summary>
         /// Редактировать или создать студента
         /// </summary>
@@ -486,6 +503,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("StudentView", model);
         }
+
         [HttpPost]
         public IActionResult EditStudent(Student student)
         {
@@ -502,6 +520,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("StudentView", model);
         }
+
         /// <summary>
         /// Удаление студента
         /// </summary>
@@ -524,6 +543,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("StudentView", model);
         }
+
         /// <summary>
         /// Редактировать или создать предмет
         /// </summary>
@@ -573,6 +593,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("SubjectView", model);
         }
+
         /// <summary>
         /// Удаление предмета
         /// </summary>
@@ -611,6 +632,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("SubjectView", model);
         }
+
         /// <summary>
         /// Редактировать или создать тему
         /// </summary>
@@ -630,6 +652,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("ThemeView");
         }
+
         [HttpPost]
         public IActionResult EditTheme(Theme theme, string allowedHours)
         {
@@ -643,6 +666,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("ThemeView");
         }
+
         /// <summary>
         /// Удалить тему
         /// </summary>
@@ -663,6 +687,7 @@ namespace Eljur.Controllers
 
             return RedirectToAction("ThemeView");
         }
+
         /// <summary>
         /// Удалить прикрепление предмета к группе
         /// </summary>
@@ -719,6 +744,7 @@ namespace Eljur.Controllers
             var list = _db.Semesters.Include(x => x.Subjects).Where(x => x.Id == semester.Id).FirstOrDefault().Subjects.ToList();
             return View("ChooseSubjectForSr", list);
         }
+
         [HttpPost]
         public IActionResult ChooseSubjectForSr(int subjectId)
         {
@@ -745,8 +771,6 @@ namespace Eljur.Controllers
 
             return View("Index");
         }
-
-
 
         public IActionResult ChooseGroupForDateTaskDone()
         {

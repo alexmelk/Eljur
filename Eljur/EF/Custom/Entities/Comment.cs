@@ -15,7 +15,7 @@ namespace Eljur.Context.Tables
         public string DekanDescription { get; set; }
         public string TeacherDescription { get; set; }
         [Required]
-        public Semester Semester { get; set; }
+        public virtual Semester Semester { get; set; }
         public int SemesterId { get; set; }
     }
 }

@@ -9,13 +9,13 @@ namespace Eljur.Context.Tables
 
         public int Number { get; set; }
 
-        public Group Group { get; set; }
+        public virtual Group Group { get; set; }
         public int GroupId { get; set; }
-        public List<Subject> Subjects { get; set; }
-        public List<GroupVisit> GroupVisits { get; set; }
-        public List<SemesterStudent> SemesterStudents { get; set; }
-        public List<Comment> Comments { get; set; }
-        public List<Semester> Semesters { get; set; }
-        public List<Check> Checks { get; set; }
+        public virtual List<Subject> Subjects { get; set; }
+        public virtual List<GroupVisit> GroupVisits { get; set; }
+        public virtual List<SemesterStudent> SemesterStudents { get; set; }
+        public virtual List<Comment> Comments { get; set; }
+        public virtual List<Semester> Semesters { get; set; }
+        public virtual List<Check> Checks { get; set; }
     }
 }
